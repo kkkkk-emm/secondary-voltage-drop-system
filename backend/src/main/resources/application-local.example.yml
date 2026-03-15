@@ -1,6 +1,13 @@
 spring:
   datasource:
     password: ${DB_PASSWORD:your_mysql_password}
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: ${REDIS_TIMEOUT:5s}
 
 baidu:
   ocr:

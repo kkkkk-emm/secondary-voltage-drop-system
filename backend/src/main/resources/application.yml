@@ -11,6 +11,13 @@ spring:
       - optional:classpath:application-local.yml
       - optional:classpath:application-local.yaml
       - optional:classpath:application-local.properties
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: ${REDIS_TIMEOUT:5s}
   servlet:
     multipart:
       max-file-size: 20MB
@@ -43,6 +50,11 @@ svd:
 
 ocr:
   max-image-size: 5242880 # 5MB
+  rate-limit:
+    enabled: ${OCR_RATE_LIMIT_ENABLED:true}
+    max-requests: ${OCR_RATE_LIMIT_MAX_REQUESTS:15}
+    window-seconds: ${OCR_RATE_LIMIT_WINDOW_SECONDS:60}
+    key-prefix: ${OCR_RATE_LIMIT_KEY_PREFIX:svd:rate:ocr}
 
 baidu:
   ocr:
