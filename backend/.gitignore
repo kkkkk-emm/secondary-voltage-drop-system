@@ -40,6 +40,9 @@ application-local.properties
 application-*.local.yml
 application-*.local.yaml
 application-*.local.properties
+src/main/resources/application-local.yml
+src/main/resources/application-local.yaml
+src/main/resources/application-local.properties
 
 # ------------------------------
 # Certificates / secret materials

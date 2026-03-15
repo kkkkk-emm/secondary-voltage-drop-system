@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    password: ${DB_PASSWORD:your_mysql_password}
+
+baidu:
+  ocr:
+    api-key: ${BAIDU_OCR_API_KEY:your_baidu_ocr_api_key}
+    secret-key: ${BAIDU_OCR_SECRET_KEY:your_baidu_ocr_secret_key}
+
+llm:
+  base-url: ${LLM_BASE_URL:https://api.deepseek.com}
+  api-key: ${LLM_API_KEY:your_llm_api_key}
+  model: ${LLM_MODEL:deepseek-chat}

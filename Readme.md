@@ -152,6 +152,11 @@ Main backend config file:
 
 - `backend/src/main/resources/application.yml`
 
+Local-only override file (recommended for secrets):
+
+- `backend/src/main/resources/application-local.yml` (git ignored)
+- template: `backend/src/main/resources/application-local.example.yml`
+
 Important keys:
 
 - `spring.datasource.url`
@@ -166,6 +171,26 @@ Frontend optional env file (`frontend/.env.*`):
 ```env
 VITE_API_BASE_URL=http://localhost:8080/api
 ```
+
+### 7.1 Local Secret Override (Recommended)
+
+1. Copy template:
+
+```powershell
+cd backend/src/main/resources
+copy application-local.example.yml application-local.yml
+```
+
+2. Fill real local secrets only in `application-local.yml`.
+3. Run backend with local profile:
+
+```powershell
+cd backend
+$env:SPRING_PROFILES_ACTIVE='local'
+.\mvnw.cmd spring-boot:run
+```
+
+`application-local.yml` is ignored by git and should never be committed.
 
 ---
 

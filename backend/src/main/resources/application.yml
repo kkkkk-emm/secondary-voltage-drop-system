@@ -6,6 +6,11 @@ server:
 spring:
   application:
     name: svd-sys
+  config:
+    import:
+      - optional:classpath:application-local.yml
+      - optional:classpath:application-local.yaml
+      - optional:classpath:application-local.properties
   servlet:
     multipart:
       max-file-size: 20MB
@@ -52,4 +57,3 @@ llm:
   api-key: ${LLM_API_KEY:}
   model: ${LLM_MODEL:deepseek-chat}
   timeout-seconds: 30
-
