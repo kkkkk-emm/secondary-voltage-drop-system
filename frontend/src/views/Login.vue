@@ -1,12 +1,13 @@
 <script setup>
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { loginApi } from '@/api/auth'
 import { setToken, setUserInfo } from '@/utils/auth'
 import { User, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const route = useRoute()
 
 // 登录表单数据
 const form = reactive({
@@ -37,7 +38,8 @@ const handleSubmit = () => {
       setToken(data.token)
       setUserInfo(data.userInfo)
       ElMessage.success('登录成功')
-      router.replace('/')
+      const redirect = route.query.redirect
+      router.replace(typeof redirect === 'string' && redirect ? redirect : '/')
     } catch (e) {
       // 失败信息在拦截器中已提示，这里不用重复提示
     } finally {

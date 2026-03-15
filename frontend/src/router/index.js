@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getToken, getUserInfo } from '@/utils/auth'
+import { getToken, getUserInfo, clearAuth, isTokenExpired } from '@/utils/auth'
 
 // 路由懒加载
 const Login = () => import('@/views/Login.vue')
@@ -132,7 +132,8 @@ router.beforeEach((to, from, next) => {
   }
 
   // 未登录跳转登录页
-  if (!token) {
+  if (!token || isTokenExpired(token)) {
+    clearAuth()
     next({ path: '/login', replace: true })
     return
   }

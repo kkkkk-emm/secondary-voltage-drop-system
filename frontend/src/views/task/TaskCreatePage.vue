@@ -17,6 +17,7 @@ const deviceLoading = ref(false)
 // 分组后的标准配置列表（去重后）
 const standardGroups = ref([])
 const standardLoading = ref(false)
+const standardTypeLock = ref('')
 
 // 每行选中的标准组的完整阈值信息
 const rowThresholds = reactive({
@@ -80,6 +81,18 @@ const loadStandardGroups = async () => {
 const getGroupByKey = (groupKey) => {
   if (!groupKey) return null
   return standardGroups.value.find((g) => g.groupKey === groupKey)
+}
+
+const normalizeProjectType = (projectType) => String(projectType || '').toUpperCase()
+const isPtProjectType = (projectType) => ['PT1', 'PT2'].includes(normalizeProjectType(projectType))
+const isCtProjectType = (projectType) => ['CT1', 'CT2'].includes(normalizeProjectType(projectType))
+
+const isStandardGroupDisabled = (group) => {
+  if (!group) return false
+  if (standardTypeLock.value === 'PT') {
+    return isCtProjectType(group.projectType)
+  }
+  return false
 }
 
 // 当选择标准变化时，加载完整的阈值信息
@@ -344,6 +357,38 @@ const fillResultRowsFromOcr = (ocrData) => {
   })
 }
 
+const detectFiveItemsFromResultRows = () => {
+  const hasDu = form.resultList.some((row) => row.valDu !== null)
+  const hasUpt = form.resultList.some((row) => row.valUpt !== null)
+  const hasUyb = form.resultList.some((row) => row.valUyb !== null)
+  return hasDu && hasUpt && hasUyb
+}
+
+const applyPtLockAndSelectDefault = async () => {
+  if (!standardGroups.value.length) {
+    await loadStandardGroups()
+  }
+
+  standardTypeLock.value = 'PT'
+
+  const pt1Group = standardGroups.value.find((g) => normalizeProjectType(g.projectType) === 'PT1')
+  const fallbackPtGroup = standardGroups.value.find((g) => isPtProjectType(g.projectType))
+  const targetGroup = pt1Group || fallbackPtGroup
+
+  if (!targetGroup) {
+    ElMessage.warning('检测到5项数据，但未找到PT标准，请检查标准组配置')
+    return
+  }
+
+  for (const row of form.resultList) {
+    row.standardGroupKey = targetGroup.groupKey
+  }
+  for (const row of form.resultList) {
+    await onStandardChange(row)
+  }
+  ElMessage.success('已检测到5项，标准已默认选择PT1，CT1/CT2已禁用')
+}
+
 const tryAutoSelectUniqueStandard = async (ocrText) => {
   if (!standardGroups.value.length) {
     await loadStandardGroups()
@@ -386,7 +431,12 @@ const applyOcrToForm = async (ocrData) => {
   form.rPercent = parseNumber(getDetailedValue(ocrData, 'r%'))
 
   fillResultRowsFromOcr(ocrData)
-  await tryAutoSelectUniqueStandard(ocrData?.ocrText || '')
+  if (detectFiveItemsFromResultRows()) {
+    await applyPtLockAndSelectDefault()
+  } else {
+    standardTypeLock.value = ''
+    await tryAutoSelectUniqueStandard(ocrData?.ocrText || '')
+  }
   formRef.value?.clearValidate?.()
 }
 
@@ -432,6 +482,7 @@ const resetForm = () => {
     { phase: 'bo', standardGroupKey: null, valF: null, valDelta: null, valDu: null, valUpt: null, valUyb: null },
     { phase: 'co', standardGroupKey: null, valF: null, valDelta: null, valDu: null, valUpt: null, valUyb: null },
   ]
+  standardTypeLock.value = ''
   rowThresholds.ao = null
   rowThresholds.bo = null
   rowThresholds.co = null
@@ -578,15 +629,16 @@ onMounted(() => {
           <span class="legend-item"><el-tag size="small" type="info">提示：PT项目需校验5项，CT项目仅校验f和δ</el-tag></span>
         </div>
 
-        <el-table :data="form.resultList" border :row-class-name="getRowClassName">
-          <el-table-column prop="phase" label="相别" width="70">
+        <el-table :data="form.resultList" border stripe :row-class-name="getRowClassName" style="width: 100%">
+          <el-table-column prop="phase" label="相别" width="86">
             <template #default="{ row }">
               <span style="text-transform: uppercase; font-weight: bold">{{ row.phase }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="standardGroupKey" label="检定标准" width="180">
+          <el-table-column prop="standardGroupKey" label="检定标准" min-width="220">
             <template #default="{ row }">
               <el-select
+                class="standard-select"
                 v-model="row.standardGroupKey"
                 placeholder="选择标准"
                 filterable
@@ -599,6 +651,7 @@ onMounted(() => {
                   :key="group.groupKey"
                   :label="group.groupKey"
                   :value="group.groupKey"
+                  :disabled="isStandardGroupDisabled(group)"
                 >
                   <span>{{ group.groupKey }}</span>
                   <el-tag v-if="group.isPT" type="primary" size="small" style="margin-left: 8px">PT</el-tag>
@@ -607,12 +660,13 @@ onMounted(() => {
               </el-select>
             </template>
           </el-table-column>
-          <el-table-column label="f(%)" width="140">
+          <el-table-column label="f(%)" min-width="170">
             <template #header>
               <span>f(%)</span>
             </template>
             <template #default="{ row }">
               <el-input-number
+                class="measure-input"
                 v-model="row.valF"
                 :precision="4"
                 :controls="false"
@@ -622,9 +676,10 @@ onMounted(() => {
               <div class="threshold-hint">{{ formatThresholdRange(row, 'f') }}</div>
             </template>
           </el-table-column>
-          <el-table-column label="δ(分)" width="140">
+          <el-table-column label="δ(分)" min-width="170">
             <template #default="{ row }">
               <el-input-number
+                class="measure-input"
                 v-model="row.valDelta"
                 :precision="3"
                 :controls="false"
@@ -634,9 +689,10 @@ onMounted(() => {
               <div class="threshold-hint">{{ formatThresholdRange(row, 'delta') }}</div>
             </template>
           </el-table-column>
-          <el-table-column label="dU(%)" width="140">
+          <el-table-column label="dU(%)" min-width="170">
             <template #default="{ row }">
               <el-input-number
+                class="measure-input"
                 v-model="row.valDu"
                 :precision="4"
                 :controls="false"
@@ -647,9 +703,10 @@ onMounted(() => {
               <div class="threshold-hint">{{ isPTProject(row) ? formatThresholdRange(row, 'du') : '(CT无)' }}</div>
             </template>
           </el-table-column>
-          <el-table-column label="Upt" width="140">
+          <el-table-column label="Upt" min-width="170">
             <template #default="{ row }">
               <el-input-number
+                class="measure-input"
                 v-model="row.valUpt"
                 :precision="3"
                 :controls="false"
@@ -660,9 +717,10 @@ onMounted(() => {
               <div class="threshold-hint">{{ isPTProject(row) ? formatThresholdRange(row, 'upt') : '(CT无)' }}</div>
             </template>
           </el-table-column>
-          <el-table-column label="Uyb" width="140">
+          <el-table-column label="Uyb" min-width="170">
             <template #default="{ row }">
               <el-input-number
+                class="measure-input"
                 v-model="row.valUyb"
                 :precision="3"
                 :controls="false"
@@ -673,7 +731,7 @@ onMounted(() => {
               <div class="threshold-hint">{{ isPTProject(row) ? formatThresholdRange(row, 'uyb') : '(CT无)' }}</div>
             </template>
           </el-table-column>
-          <el-table-column label="实时校验" width="90" fixed="right">
+          <el-table-column label="实时校验" min-width="120">
             <template #default="{ row }">
               <el-tag v-if="checkRowPass(row) === true" type="success" size="small">合格</el-tag>
               <el-tag v-else-if="checkRowPass(row) === false" type="danger" size="small">不合格</el-tag>
@@ -768,6 +826,15 @@ onMounted(() => {
 
 :deep(.el-input-number.is-disabled .el-input__inner) {
   background-color: #f5f7fa;
+}
+
+.standard-select {
+  width: 100%;
+}
+
+:deep(.standard-select .el-select__wrapper),
+:deep(.measure-input .el-input__wrapper) {
+  min-height: 30px;
 }
 </style>
 
