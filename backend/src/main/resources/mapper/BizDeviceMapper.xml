@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.straykun.svd.svdsys.mapper.BizDeviceMapper">
+
+    <resultMap id="BizDeviceResultMap" type="com.straykun.svd.svdsys.domain.BizDevice">
+        <id property="id" column="id"/>
+        <result property="productNo" column="product_no"/>
+        <result property="productName" column="product_name"/>
+        <result property="model" column="model"/>
+        <result property="manufacturer" column="manufacturer"/>
+        <result property="placeOrigin" column="place_origin"/>
+        <result property="productionDate" column="production_date"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, product_no, product_name, model, manufacturer, place_origin, production_date, create_time
+    </sql>
+
+    <select id="selectPage" resultMap="BizDeviceResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_device
+        <where>
+            <if test="productNo != null and productNo != ''">
+                and product_no = #{productNo}
+            </if>
+            <if test="productName != null and productName != ''">
+                and product_name like concat('%', #{productName}, '%')
+            </if>
+            <if test="manufacturer != null and manufacturer != ''">
+                and manufacturer like concat('%', #{manufacturer}, '%')
+            </if>
+        </where>
+        order by create_time desc, id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="count" resultType="long">
+        select count(1)
+        from biz_device
+        <where>
+            <if test="productNo != null and productNo != ''">
+                and product_no = #{productNo}
+            </if>
+            <if test="productName != null and productName != ''">
+                and product_name like concat('%', #{productName}, '%')
+            </if>
+            <if test="manufacturer != null and manufacturer != ''">
+                and manufacturer like concat('%', #{manufacturer}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="selectById" resultMap="BizDeviceResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_device
+        where id = #{id}
+    </select>
+
+    <select id="selectByProductNo" resultMap="BizDeviceResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_device
+        where product_no = #{productNo}
+        limit 1
+    </select>
+
+    <insert id="insert" parameterType="com.straykun.svd.svdsys.domain.BizDevice" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into biz_device
+        (product_no, product_name, model, manufacturer, place_origin, production_date, create_time)
+        values
+        (#{productNo}, #{productName}, #{model}, #{manufacturer}, #{placeOrigin}, #{productionDate}, now())
+    </insert>
+
+    <update id="update" parameterType="com.straykun.svd.svdsys.domain.BizDevice">
+        update biz_device
+        set product_no      = #{productNo},
+            product_name    = #{productName},
+            model           = #{model},
+            manufacturer    = #{manufacturer},
+            place_origin    = #{placeOrigin},
+            production_date = #{productionDate}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete
+        from biz_device
+        where id = #{id}
+    </delete>
+
+    <select id="selectAll" resultMap="BizDeviceResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from biz_device
+        order by create_time desc, id desc
+    </select>
+
+</mapper>
+
+

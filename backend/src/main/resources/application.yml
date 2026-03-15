@@ -1,0 +1,55 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: svd-sys
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  datasource:
+    url: jdbc:mysql://localhost:3306/svd_sys?useSSL=false&serverTimezone=Asia/Shanghai&characterEncoding=utf8&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+  type-aliases-package: com.straykun.svd.svdsys.domain
+  configuration:
+    map-underscore-to-camel-case: true
+
+svd:
+  user:
+    default-password: "Cug@2025"
+
+ocr:
+  max-image-size: 5242880 # 5MB
+
+baidu:
+  ocr:
+    api-key: ${BAIDU_OCR_API_KEY:}
+    secret-key: ${BAIDU_OCR_SECRET_KEY:}
+    endpoint: ${BAIDU_OCR_ENDPOINT:https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic}
+    token-url: ${BAIDU_OCR_TOKEN_URL:https://aip.baidubce.com/oauth/2.0/token}
+    token-refresh-buffer-seconds: 120
+
+llm:
+  base-url: ${LLM_BASE_URL:https://api.deepseek.com}
+  api-key: ${LLM_API_KEY:}
+  model: ${LLM_MODEL:deepseek-chat}
+  timeout-seconds: 30
+

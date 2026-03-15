@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.straykun.svd.svdsys.mapper.BizTestResultMapper">
+
+    <resultMap id="BizTestResultMap" type="com.straykun.svd.svdsys.domain.BizTestResult">
+        <id property="id" column="id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="standardId" column="standard_id"/>
+        <result property="phase" column="phase"/>
+        <result property="valF" column="val_f"/>
+        <result property="valDelta" column="val_delta"/>
+        <result property="valDu" column="val_du"/>
+        <result property="valUpt" column="val_upt"/>
+        <result property="valUyb" column="val_uyb"/>
+        <result property="isPass" column="is_pass"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into biz_test_result (task_id, standard_id, phase, val_f, val_delta, val_du, val_upt, val_uyb, is_pass)
+        values (#{taskId}, #{standardId}, #{phase}, #{valF}, #{valDelta}, #{valDu}, #{valUpt}, #{valUyb}, #{isPass})
+    </insert>
+
+    <insert id="insertBatch">
+        insert into biz_test_result (task_id, standard_id, phase, val_f, val_delta, val_du, val_upt, val_uyb, is_pass)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.taskId}, #{item.standardId}, #{item.phase}, #{item.valF}, #{item.valDelta}, #{item.valDu},
+            #{item.valUpt}, #{item.valUyb}, #{item.isPass})
+        </foreach>
+    </insert>
+
+    <select id="selectByTaskId" resultMap="BizTestResultMap">
+        select id,
+               task_id,
+               standard_id,
+               phase,
+               val_f,
+               val_delta,
+               val_du,
+               val_upt,
+               val_uyb,
+               is_pass
+        from biz_test_result
+        where task_id = #{taskId}
+        order by id
+    </select>
+
+    <select id="selectById" resultMap="BizTestResultMap">
+        select id,
+               task_id,
+               standard_id,
+               phase,
+               val_f,
+               val_delta,
+               val_du,
+               val_upt,
+               val_uyb,
+               is_pass
+        from biz_test_result
+        where id = #{id}
+    </select>
+
+    <update id="updateById" parameterType="com.straykun.svd.svdsys.domain.BizTestResult">
+        update biz_test_result
+        set val_f     = #{valF},
+            val_delta = #{valDelta},
+            val_du    = #{valDu},
+            val_upt   = #{valUpt},
+            val_uyb   = #{valUyb},
+            is_pass   = #{isPass}
+        where id = #{id}
+    </update>
+
+</mapper>
+
+

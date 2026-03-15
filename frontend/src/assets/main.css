@@ -1,0 +1,278 @@
+@import './base.css';
+
+/* ===== 全局应用样式 ===== */
+#app {
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+/* ===== 主题色彩变量 ===== */
+:root {
+  --primary-color: #667eea;
+  --primary-hover: #5a6fd6;
+  --primary-light: rgba(102, 126, 234, 0.1);
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --danger-color: #ff4d4f;
+  --info-color: #1890ff;
+
+  --text-primary: #1a1a2e;
+  --text-secondary: #666;
+  --text-placeholder: #999;
+
+  --bg-page: #f0f2f5;
+  --bg-card: #fff;
+  --bg-hover: #f5f5f5;
+
+  --border-color: #e8e8e8;
+  --border-radius: 8px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== 页面通用样式 ===== */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== 搜索区域样式 ===== */
+.search-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.search-card :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 16px;
+}
+
+.search-card :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ===== 表格区域样式 ===== */
+.table-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: 20px;
+}
+
+/* 表格样式优化 */
+:deep(.el-table) {
+  --el-table-border-color: #f0f0f0;
+  --el-table-header-bg-color: #fafafa;
+  --el-table-row-hover-bg-color: #f5f7fa;
+}
+
+:deep(.el-table th.el-table__cell) {
+  background-color: #fafafa;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 14px 0;
+}
+
+:deep(.el-table td.el-table__cell) {
+  padding: 12px 0;
+}
+
+:deep(.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell) {
+  background: #fafcff;
+}
+
+/* ===== 分页样式 ===== */
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* ===== 按钮样式优化 ===== */
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  transition: all 0.3s;
+}
+
+:deep(.el-button--primary:hover) {
+  background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+}
+
+:deep(.el-button--primary:active) {
+  transform: translateY(0);
+}
+
+/* ===== 输入框样式优化 ===== */
+:deep(.el-input__wrapper),
+:deep(.el-select__wrapper) {
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+:deep(.el-input__wrapper:hover),
+:deep(.el-select__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--primary-color) inset;
+}
+
+:deep(.el-input__wrapper.is-focus),
+:deep(.el-select__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--primary-color) inset, 0 0 0 3px var(--primary-light);
+}
+
+/* ===== 卡片样式优化 ===== */
+:deep(.el-card) {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s;
+}
+
+:deep(.el-card:hover) {
+  box-shadow: var(--shadow-md);
+}
+
+/* ===== 标签样式 ===== */
+:deep(.el-tag--success) {
+  background-color: #f6ffed;
+  border-color: #b7eb8f;
+  color: #52c41a;
+}
+
+:deep(.el-tag--danger) {
+  background-color: #fff2f0;
+  border-color: #ffccc7;
+  color: #ff4d4f;
+}
+
+:deep(.el-tag--warning) {
+  background-color: #fffbe6;
+  border-color: #ffe58f;
+  color: #faad14;
+}
+
+:deep(.el-tag--info) {
+  background-color: #e6f7ff;
+  border-color: #91d5ff;
+  color: #1890ff;
+}
+
+/* ===== 对话框样式 ===== */
+:deep(.el-dialog) {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+:deep(.el-dialog__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  margin: 0;
+}
+
+:deep(.el-dialog__title) {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+:deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* ===== 表单样式 ===== */
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
+
+/* ===== 工具类 ===== */
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.float-right {
+  margin-left: auto;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* ===== 链接样式 ===== */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+/* ===== 滚动条样式 ===== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* ===== 过渡动画 ===== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}

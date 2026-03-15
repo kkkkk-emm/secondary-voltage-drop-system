@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.straykun.svd.svdsys.mapper.BizTestTaskMapper">
+
+    <resultMap id="BizTestTaskResultMap" type="com.straykun.svd.svdsys.domain.BizTestTask">
+        <id property="id" column="id"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="operatorId" column="operator_id"/>
+        <result property="meterPointId" column="meter_point_id"/>
+        <result property="deliverDate" column="deliver_date"/>
+        <result property="testDate" column="test_date"/>
+        <result property="temperature" column="temperature"/>
+        <result property="humidity" column="humidity"/>
+        <result property="tanPhi" column="tan_phi"/>
+        <result property="rPercent" column="r_percent"/>
+    </resultMap>
+
+    <resultMap id="TaskRecordMap" type="com.straykun.svd.svdsys.mapper.BizTestTaskMapper$TaskRecord">
+        <id property="id" column="id"/>
+        <result property="deviceId" column="device_id"/>
+        <result property="deviceProductNo" column="device_product_no"/>
+        <result property="deviceProductName" column="device_product_name"/>
+        <result property="operatorId" column="operator_id"/>
+        <result property="operatorName" column="operator_name"/>
+        <result property="meterPointId" column="meter_point_id"/>
+        <result property="testDate" column="test_date"/>
+        <result property="result" column="result"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.straykun.svd.svdsys.domain.BizTestTask" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into biz_test_task (device_id, operator_id, meter_point_id, deliver_date, test_date, temperature,
+                                   humidity, tan_phi, r_percent)
+        values (#{deviceId}, #{operatorId}, #{meterPointId}, #{deliverDate}, #{testDate}, #{temperature},
+                #{humidity}, #{tanPhi}, #{rPercent})
+    </insert>
+
+    <select id="selectById" resultMap="BizTestTaskResultMap">
+        select id,
+               device_id,
+               operator_id,
+               meter_point_id,
+               deliver_date,
+               test_date,
+               temperature,
+               humidity,
+               tan_phi,
+               r_percent
+        from biz_test_task
+        where id = #{id}
+    </select>
+
+    <select id="selectPage" resultMap="TaskRecordMap">
+        select t.id,
+               t.device_id,
+               d.product_no  as device_product_no,
+               d.product_name as device_product_name,
+               t.operator_id,
+               u.real_name   as operator_name,
+               t.meter_point_id,
+               t.test_date,
+               case
+                   when exists(select 1 from biz_test_result r where r.task_id = t.id and r.is_pass = 0) then 0
+                   else 1
+                   end       as result
+        from biz_test_task t
+                 left join biz_device d on t.device_id = d.id
+                 left join sys_user u on t.operator_id = u.id
+        <where>
+            <if test="taskId != null">
+                and t.id = #{taskId}
+            </if>
+            <if test="deviceProductNo != null and deviceProductNo != ''">
+                and d.product_no like concat('%', #{deviceProductNo}, '%')
+            </if>
+            <if test="operatorName != null and operatorName != ''">
+                and u.real_name like concat('%', #{operatorName}, '%')
+            </if>
+            <if test="operatorId != null">
+                and t.operator_id = #{operatorId}
+            </if>
+            <if test="startDate != null">
+                and t.test_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                and t.test_date &lt;= #{endDate}
+            </if>
+            <if test="isPass != null">
+                <choose>
+                    <when test="isPass == 1">
+                        and not exists(select 1 from biz_test_result r2 where r2.task_id = t.id and r2.is_pass = 0)
+                    </when>
+                    <otherwise>
+                        and exists(select 1 from biz_test_result r2 where r2.task_id = t.id and r2.is_pass = 0)
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+        order by t.test_date desc, t.id desc
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="count" resultType="long">
+        select count(1)
+        from biz_test_task t
+                 left join biz_device d on t.device_id = d.id
+                 left join sys_user u on t.operator_id = u.id
+        <where>
+            <if test="taskId != null">
+                and t.id = #{taskId}
+            </if>
+            <if test="deviceProductNo != null and deviceProductNo != ''">
+                and d.product_no like concat('%', #{deviceProductNo}, '%')
+            </if>
+            <if test="operatorName != null and operatorName != ''">
+                and u.real_name like concat('%', #{operatorName}, '%')
+            </if>
+            <if test="operatorId != null">
+                and t.operator_id = #{operatorId}
+            </if>
+            <if test="startDate != null">
+                and t.test_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                and t.test_date &lt;= #{endDate}
+            </if>
+            <if test="isPass != null">
+                <choose>
+                    <when test="isPass == 1">
+                        and not exists(select 1 from biz_test_result r2 where r2.task_id = t.id and r2.is_pass = 0)
+                    </when>
+                    <otherwise>
+                        and exists(select 1 from biz_test_result r2 where r2.task_id = t.id and r2.is_pass = 0)
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+</mapper>
+
+

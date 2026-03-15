@@ -1,0 +1,84 @@
+# ------------------------------
+# Maven / Java build artifacts
+# ------------------------------
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.hprof
+
+# Maven wrapper generated binary (can be regenerated)
+.mvn/wrapper/maven-wrapper.jar
+
+# ------------------------------
+# Runtime logs / crash files
+# ------------------------------
+logs/
+*.log
+*.out
+*.err
+*.pid
+*.pid.lock
+*.seed
+hs_err_pid*
+replay_pid*
+
+# ------------------------------
+# Local environment / profiles
+# ------------------------------
+.env
+.env.*
+!.env.example
+!.env.*.example
+application-local.yml
+application-local.yaml
+application-local.properties
+application-*.local.yml
+application-*.local.yaml
+application-*.local.properties
+
+# ------------------------------
+# Certificates / secret materials
+# ------------------------------
+*.jks
+*.p12
+*.pfx
+*.pem
+*.key
+*.crt
+
+# ------------------------------
+# IDE / editor files
+# ------------------------------
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# ------------------------------
+# NetBeans
+# ------------------------------
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ------------------------------
+# OS files
+# ------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
