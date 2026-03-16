@@ -10,7 +10,6 @@ import {
   Plus,
   List,
   Upload,
-  Picture,
   Setting,
   User,
   DataLine,
@@ -62,7 +61,6 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/task/create')) return '/task/create'
   if (route.path.startsWith('/task/list')) return '/task/list'
   if (route.path.startsWith('/task/import')) return '/task/import'
-  if (route.path.startsWith('/task/ocr')) return '/task/ocr'
   if (route.path.startsWith('/admin/dashboard')) return '/admin/dashboard'
   if (route.path.startsWith('/admin')) return route.path
   return route.path
@@ -179,10 +177,6 @@ const handleChangePwd = () => {
         <el-menu-item v-if="isUser" index="/task/import">
           <el-icon><Upload /></el-icon>
           <span>Excel数据导入</span>
-        </el-menu-item>
-        <el-menu-item v-if="isUser" index="/task/ocr">
-          <el-icon><Picture /></el-icon>
-          <span>图片OCR提取</span>
         </el-menu-item>
         <!-- 管理员专属菜单：角色为0时显示 -->
         <el-sub-menu v-if="isAdmin" index="admin">

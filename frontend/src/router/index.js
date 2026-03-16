@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getToken, getUserInfo, clearAuth, isTokenExpired } from '@/utils/auth'
+import { getToken, getUserInfo } from '@/utils/auth'
 
 // 路由懒加载
 const Login = () => import('@/views/Login.vue')
@@ -14,7 +14,6 @@ const TaskCreatePage = () => import('@/views/task/TaskCreatePage.vue')
 const TaskListPage = () => import('@/views/task/TaskListPage.vue')
 const TaskDetailPage = () => import('@/views/task/TaskDetailPage.vue')
 const ImportPage = () => import('@/views/task/ImportPage.vue')
-const OcrExtractPage = () => import('@/views/task/OcrExtractPage.vue')
 
 // 预留其它业务页面（检定标准、检定任务、日志、用户管理等）
 
@@ -105,10 +104,10 @@ const router = createRouter({
           meta: { title: 'Excel数据导入', roles: [1] }, // 仅检测员
         },
         {
+          // 兼容旧入口：图片OCR提取页已下线，统一跳转到新建任务中的OCR回填
           path: 'task/ocr',
-          name: 'TaskOcr',
-          component: OcrExtractPage,
-          meta: { title: '图片OCR提取', roles: [1] }, // 仅检测员
+          redirect: '/task/create',
+          meta: { roles: [1] },
         },
         // TODO: 后续在此处追加其它模块路由
       ],
@@ -132,8 +131,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // 未登录跳转登录页
-  if (!token || isTokenExpired(token)) {
-    clearAuth()
+  if (!token) {
     next({ path: '/login', replace: true })
     return
   }

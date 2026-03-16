@@ -9,6 +9,8 @@ import { extractOcr } from '@/api/ocr'
 const formRef = ref()
 const loading = ref(false)
 const ocrLoading = ref(false)
+const ocrPreviewVisible = ref(false)
+const pendingOcrData = ref(null)
 
 // 设备下拉列表
 const deviceList = ref([])
@@ -234,6 +236,20 @@ const selectedDevice = computed(() => {
   return deviceList.value.find((d) => d.id === form.deviceId)
 })
 
+const previewOcrText = computed(() => String(pendingOcrData.value?.ocrText || '').trim())
+
+const previewExtractedPairsText = computed(() => {
+  const ocrData = pendingOcrData.value || {}
+  const detailedPairs = ocrData.detailedPairs || {}
+  const legacyPairs = ocrData.pairs || {}
+  const pairs = Object.keys(detailedPairs).length > 0 ? detailedPairs : legacyPairs
+  try {
+    return JSON.stringify(pairs, null, 2)
+  } catch (e) {
+    return '{}'
+  }
+})
+
 const beforeOcrUpload = (file) => {
   const name = (file.name || '').toLowerCase()
   const isImage = name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png')
@@ -440,6 +456,36 @@ const applyOcrToForm = async (ocrData) => {
   formRef.value?.clearValidate?.()
 }
 
+const openOcrPreview = (ocrData) => {
+  pendingOcrData.value = ocrData || null
+  ocrPreviewVisible.value = true
+}
+
+const closeOcrPreview = () => {
+  ocrPreviewVisible.value = false
+}
+
+const handleConfirmOcrFill = async () => {
+  if (!pendingOcrData.value) {
+    ElMessage.warning('暂无可回填的OCR结果')
+    return
+  }
+  try {
+    await applyOcrToForm(pendingOcrData.value)
+    closeOcrPreview()
+    pendingOcrData.value = null
+    ElMessage.success('OCR回填完成，请核对后提交')
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const handleCancelOcrFill = () => {
+  closeOcrPreview()
+  pendingOcrData.value = null
+  ElMessage.info('已取消本次OCR回填')
+}
+
 const handleOcrUpload = async (options) => {
   try {
     if (hasExistingFormDataForOcrFill()) {
@@ -456,9 +502,9 @@ const handleOcrUpload = async (options) => {
   ocrLoading.value = true
   try {
     const ocrData = await extractOcr(options.file)
-    await applyOcrToForm(ocrData)
+    openOcrPreview(ocrData)
     options.onSuccess?.(ocrData, options.file)
-    ElMessage.success('OCR回填完成，请核对后提交')
+    ElMessage.success('OCR识别完成，请确认后回填')
   } catch (e) {
     options.onError?.(e)
     console.error(e)
@@ -557,6 +603,45 @@ onMounted(() => {
       >
         <el-button type="primary" plain :loading="ocrLoading">图片OCR一键回填</el-button>
       </el-upload>
+      <el-dialog
+        v-model="ocrPreviewVisible"
+        title="OCR识别结果确认"
+        width="900px"
+        top="8vh"
+        append-to-body
+        destroy-on-close
+        @closed="pendingOcrData = null"
+      >
+        <el-alert type="warning" :closable="false" show-icon class="ocr-preview-alert">
+          <template #title>请先确认识别结果，点击“确认回填”后才会写入表单</template>
+        </el-alert>
+        <el-row :gutter="12">
+          <el-col :span="12">
+            <div class="preview-title">OCR原文</div>
+            <el-input
+              type="textarea"
+              :rows="16"
+              readonly
+              resize="none"
+              :model-value="previewOcrText || '-'"
+            />
+          </el-col>
+          <el-col :span="12">
+            <div class="preview-title">抽取结果（JSON）</div>
+            <el-input
+              type="textarea"
+              :rows="16"
+              readonly
+              resize="none"
+              :model-value="previewExtractedPairsText"
+            />
+          </el-col>
+        </el-row>
+        <template #footer>
+          <el-button @click="handleCancelOcrFill">取消</el-button>
+          <el-button type="primary" @click="handleConfirmOcrFill">确认回填</el-button>
+        </template>
+      </el-dialog>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
         <!-- 设备选择下拉 -->
         <el-form-item label="被检设备" prop="deviceId">
@@ -769,6 +854,17 @@ onMounted(() => {
 
 .ocr-upload {
   margin-bottom: 16px;
+}
+
+.ocr-preview-alert {
+  margin-bottom: 12px;
+}
+
+.preview-title {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
 }
 
 .color-legend {
