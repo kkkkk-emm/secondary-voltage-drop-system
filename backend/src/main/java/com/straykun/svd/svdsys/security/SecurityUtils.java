@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Collection;
 
 /**
- * 安全相关工具类：获取当前登录用户信息
+ * 安全上下文工具类。
  */
 public final class SecurityUtils {
 
@@ -15,7 +15,9 @@ public final class SecurityUtils {
     }
 
     /**
-     * 获取当前登录用户ID（字符串形式）
+     * 查询 getCurrentUserId 相关信息。
+     *
+     * @return 返回字符串结果。
      */
     public static String getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -27,7 +29,9 @@ public final class SecurityUtils {
     }
 
     /**
-     * 获取当前是否为管理员
+     * 执行 isAdmin 校验逻辑。
+     *
+     * @return 返回校验结果。
      */
     public static boolean isAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -46,5 +50,3 @@ public final class SecurityUtils {
         return false;
     }
 }
-
-

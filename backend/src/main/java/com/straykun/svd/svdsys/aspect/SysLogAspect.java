@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 系统日志切面：自动记录带@SysLog注解的方法调用
+ * 系统日志切面。
  */
 @Aspect
 @Component
@@ -44,12 +44,26 @@ public class SysLogAspect {
     private final SysUserMapper sysUserMapper;
     private final ObjectMapper objectMapper;
 
+    /**
+     * 构造函数，初始化 SysLogAspect 所需依赖。
+     *
+     * @param sysLogMapper 参数 sysLogMapper。
+     * @param sysUserMapper 参数 sysUserMapper。
+     * @param objectMapper 参数 objectMapper。
+     */
     public SysLogAspect(SysLogMapper sysLogMapper, SysUserMapper sysUserMapper, ObjectMapper objectMapper) {
         this.sysLogMapper = sysLogMapper;
         this.sysUserMapper = sysUserMapper;
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 执行 around 业务逻辑。
+     *
+     * @param joinPoint 参数 joinPoint。
+     * @return 返回处理结果。
+     * @throws Throwable 异常信息。
+     */
     @Around("@annotation(com.straykun.svd.svdsys.annotation.SysLog)")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
@@ -176,4 +190,3 @@ public class SysLogAspect {
         return ip != null && !ip.isEmpty() && !UNKNOWN.equalsIgnoreCase(ip);
     }
 }
-

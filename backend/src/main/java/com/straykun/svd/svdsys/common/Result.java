@@ -3,26 +3,23 @@ package com.straykun.svd.svdsys.common;
 import lombok.Data;
 
 /**
- * 统一响应结果封装
+ * 统一响应结果对象。
  */
 @Data
 public class Result<T> {
 
-    /**
-     * 业务状态码：200-成功, 500-系统异常, 401-未认证, 403-无权限, 400-参数错误
-     */
     private Integer code;
 
-    /**
-     * 提示信息
-     */
     private String message;
 
-    /**
-     * 业务数据
-     */
     private T data;
 
+    /**
+     * 执行 success 业务逻辑。
+     *
+     * @param data 参数 data。
+     * @return 返回统一响应结果。
+     */
     public static <T> Result<T> success(T data) {
         Result<T> r = new Result<>();
         r.setCode(200);
@@ -31,10 +28,22 @@ public class Result<T> {
         return r;
     }
 
+    /**
+     * 执行 success 业务逻辑。
+     *
+     * @return 返回统一响应结果。
+     */
     public static <T> Result<T> success() {
         return success(null);
     }
 
+    /**
+     * 执行 fail 业务逻辑。
+     *
+     * @param code 参数 code。
+     * @param message 参数 message。
+     * @return 返回统一响应结果。
+     */
     public static <T> Result<T> fail(Integer code, String message) {
         Result<T> r = new Result<>();
         r.setCode(code);
@@ -43,9 +52,13 @@ public class Result<T> {
         return r;
     }
 
+    /**
+     * 执行 fail 业务逻辑。
+     *
+     * @param message 参数 message。
+     * @return 返回统一响应结果。
+     */
     public static <T> Result<T> fail(String message) {
         return fail(500, message);
     }
 }
-
-

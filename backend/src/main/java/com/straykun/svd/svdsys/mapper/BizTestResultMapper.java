@@ -6,46 +6,49 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+/**
+ * 业务检定结果数据访问接口，定义持久化操作。
+ */
 @Mapper
 public interface BizTestResultMapper {
 
     /**
-     * 新增检测结果
+     * 执行 insert 新增处理。
      *
-     * @param result 检测结果
-     * @return 影响行数
+     * @param result 参数 result。
+     * @return 返回处理结果数量。
      */
     int insert(BizTestResult result);
 
     /**
-     * 批量新增检测结果
+     * 执行 insertBatch 新增处理。
      *
-     * @param list 检测结果列表
-     * @return 影响行数
+     * @param list 参数 list。
+     * @return 返回处理结果数量。
      */
     int insertBatch(@Param("list") List<BizTestResult> list);
 
     /**
-     * 根据任务ID查询检测结果列表
+     * 查询 selectByTaskId 相关信息。
      *
-     * @param taskId 任务ID
-     * @return 检测结果列表
+     * @param taskId 参数 taskId。
+     * @return 返回结果列表。
      */
     List<BizTestResult> selectByTaskId(@Param("taskId") Long taskId);
 
     /**
-     * 根据ID查询检测结果
+     * 查询 selectById 相关信息。
      *
-     * @param id 结果ID
-     * @return 检测结果
+     * @param id 参数 id。
+     * @return 返回处理结果。
      */
     BizTestResult selectById(@Param("id") Long id);
 
     /**
-     * 根据ID更新检测结果
+     * 执行 updateById 更新处理。
      *
-     * @param result 检测结果
-     * @return 影响行数
+     * @param result 参数 result。
+     * @return 返回处理结果数量。
      */
     int updateById(BizTestResult result);
 }

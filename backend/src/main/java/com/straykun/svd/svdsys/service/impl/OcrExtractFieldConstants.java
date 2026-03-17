@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * OCR 提取字段常量
+ * OCR 字段常量定义。
  */
 public final class OcrExtractFieldConstants {
 
@@ -57,6 +57,11 @@ public final class OcrExtractFieldConstants {
     private OcrExtractFieldConstants() {
     }
 
+    /**
+     * 创建并初始化明细字段键值对模板。
+     *
+     * @return 返回明细字段键值对映射。
+     */
     public static Map<String, String> newDetailedMap() {
         Map<String, String> map = new LinkedHashMap<>();
         for (String key : DETAILED_KEYS) {
@@ -65,6 +70,11 @@ public final class OcrExtractFieldConstants {
         return map;
     }
 
+    /**
+     * 创建并初始化兼容字段键值对模板。
+     *
+     * @return 返回兼容字段键值对映射。
+     */
     public static Map<String, String> newLegacyMap() {
         Map<String, String> map = new LinkedHashMap<>();
         for (String key : LEGACY_KEYS) {

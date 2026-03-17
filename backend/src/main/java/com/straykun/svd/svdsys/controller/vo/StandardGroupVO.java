@@ -6,47 +6,61 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 /**
- * 标准组合VO（去重后的唯一组合）
+ * 标准分组响应视图对象。
  */
 @Data
 public class StandardGroupVO {
 
     /**
-     * 项目类型：PT1/PT2/CT1/CT2
+     * projectType 字段。
      */
     private String projectType;
 
     /**
-     * 档位：100V/5A
+     * gearLevel 字段。
      */
     private String gearLevel;
 
     /**
-     * 负载百分比：100%
+     * loadPercent 字段。
      */
     private String loadPercent;
 
     /**
-     * 组合标识（用于前端选择）：projectType-gearLevel-loadPercent
+     * groupKey 字段。
      */
     private String groupKey;
 
     /**
-     * 是否为PT项目（PT项目有5项数据，CT项目只有2项）
+     * isPT 字段。
      */
     private Boolean isPT;
 
     /**
-     * 各阈值项的范围 Map<thresholdItem, LimitRange>
-     * 例如: {"f": {min: -0.05, max: 0.05}, "delta": {min: -2, max: 2}, ...}
+     * thresholds 字段。
      */
     private Map<String, LimitRange> thresholds;
 
+    /**
+     * 限制Range响应视图对象。
+     */
     @Data
     public static class LimitRange {
+        /**
+         * min 字段。
+         */
         private BigDecimal min;
+        /**
+         * max 字段。
+         */
         private BigDecimal max;
 
+        /**
+         * 构造函数，初始化 LimitRange 所需依赖。
+         *
+         * @param min 参数 min。
+         * @param max 参数 max。
+         */
         public LimitRange(BigDecimal min, BigDecimal max) {
             this.min = min;
             this.max = max;

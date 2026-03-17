@@ -31,7 +31,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Excel 导入服务实现
+ * Excel 导入服务实现类。
  */
 @Service
 public class ExcelImportServiceImpl implements ExcelImportService {
@@ -62,6 +62,14 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     private final BizTestResultMapper resultMapper;
     private final SysTestStandardMapper standardMapper;
 
+    /**
+     * 构造函数，初始化 ExcelImportServiceImpl 所需依赖。
+     *
+     * @param deviceMapper 参数 deviceMapper。
+     * @param taskMapper 参数 taskMapper。
+     * @param resultMapper 参数 resultMapper。
+     * @param standardMapper 参数 standardMapper。
+     */
     public ExcelImportServiceImpl(BizDeviceMapper deviceMapper,
                                   BizTestTaskMapper taskMapper,
                                   BizTestResultMapper resultMapper,
@@ -76,16 +84,34 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     // 3. 公有业务接口 (Public API)
     // ==========================================
 
+    /**
+     * 执行 previewTasks 业务逻辑。
+     *
+     * @param file 参数 file。
+     * @return 返回处理结果。
+     */
     @Override
     public ExcelPreviewVO previewTasks(MultipartFile file) {
         return executePreview(file, true);
     }
 
+    /**
+     * 执行 previewDevices 业务逻辑。
+     *
+     * @param file 参数 file。
+     * @return 返回处理结果。
+     */
     @Override
     public ExcelPreviewVO previewDevices(MultipartFile file) {
         return executePreview(file, false);
     }
 
+    /**
+     * 执行 importTasks 新增处理。
+     *
+     * @param file 参数 file。
+     * @return 返回处理结果。
+     */
     @Override
     @Transactional
     public ExcelImportResultVO importTasks(MultipartFile file) {
@@ -144,6 +170,12 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         return result;
     }
 
+    /**
+     * 执行 importDevices 新增处理。
+     *
+     * @param file 参数 file。
+     * @return 返回处理结果。
+     */
     @Override
     @Transactional
     public ExcelImportResultVO importDevices(MultipartFile file) {
@@ -197,9 +229,6 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     // 4. 私有业务逻辑：预览相关 (Preview Logic)
     // ==========================================
 
-    /**
-     * 统一预览执行逻辑
-     */
     private ExcelPreviewVO executePreview(MultipartFile file, boolean isTask) {
         ExcelPreviewVO preview = new ExcelPreviewVO();
         String validationError = validateExcelFile(file);
@@ -662,6 +691,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     // 8. 静态内部类 (Inner Contexts)
     // ==========================================
 
+    /**
+     * 设备导入Context服务实现类，封装业务流程。
+     */
     @Data
     private static class DeviceImportContext {
         private String productNo;
@@ -672,6 +704,11 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         private String productionDateStr;
         private LocalDate productionDate;
 
+        /**
+         * 构造函数，初始化 DeviceImportContext 所需依赖。
+         *
+         * @param row 参数 row。
+         */
         public DeviceImportContext(Row row) {
             this.productNo = getCellStringValue(row.getCell(0));
             this.productName = getCellStringValue(row.getCell(1));
@@ -682,6 +719,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         }
     }
 
+    /**
+     * 检定任务RowContext服务实现类，封装业务流程。
+     */
     @Data
     private static class TaskRowContext {
         private Row row;
@@ -712,6 +752,12 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         private LocalDateTime testDate;
         private List<SysTestStandard> thresholdItems;
 
+        /**
+         * 构造函数，初始化 TaskRowContext 所需依赖。
+         *
+         * @param row 参数 row。
+         * @param rowNum 参数 rowNum。
+         */
         public TaskRowContext(Row row, int rowNum) {
             this.row = row;
             this.rowNum = rowNum;

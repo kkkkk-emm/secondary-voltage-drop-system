@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * 图片 OCR 提取入口
+ * OCR 提取控制器。
  */
 @RestController
 @RequestMapping("/ocr")
@@ -28,6 +28,12 @@ public class OcrExtractController {
     private final OcrExtractService ocrExtractService;
     private final OcrRateLimitService ocrRateLimitService;
 
+    /**
+     * 构造函数，初始化 OcrExtractController 所需依赖。
+     *
+     * @param ocrExtractService 参数 ocrExtractService。
+     * @param ocrRateLimitService 参数 ocrRateLimitService。
+     */
     public OcrExtractController(OcrExtractService ocrExtractService,
                                 OcrRateLimitService ocrRateLimitService) {
         this.ocrExtractService = ocrExtractService;
@@ -35,7 +41,11 @@ public class OcrExtractController {
     }
 
     /**
-     * 图片上传 -> OCR -> 大模型抽取
+     * 执行 extract 数据处理。
+     *
+     * @param file 参数 file。
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PostMapping("/extract")
     @PreAuthorize("hasRole('USER')")
@@ -59,4 +69,3 @@ public class OcrExtractController {
         }
     }
 }
-

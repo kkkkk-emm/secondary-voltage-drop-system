@@ -24,8 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * PDF 报告生成服务实现
- * 使用 iText 7 生成完整的检定证书 PDF
+ * 报告服务实现类。
  */
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -37,6 +36,12 @@ public class ReportServiceImpl implements ReportService {
     private static final DeviceRgb COLOR_RED = new DeviceRgb(255, 0, 0);
     private static final DeviceRgb BG_GRAY = new DeviceRgb(240, 240, 240);
 
+    /**
+     * 执行 generatePdf 业务逻辑。
+     *
+     * @param detail 参数 detail。
+     * @param outputStream 参数 outputStream。
+     */
     @Override
     public void generatePdf(TaskDetailVO detail, OutputStream outputStream) {
         try {
@@ -80,7 +85,7 @@ public class ReportServiceImpl implements ReportService {
                     {"C:\\Windows\\Fonts\\simfang.ttf", null},    // 仿宋
                     {"C:\\Windows\\Fonts\\msyh.ttc", "0"},        // 微软雅黑
             };
-            
+
             for (String[] config : fontConfigs) {
                 String fontPath = config[0];
                 String ttcIndex = config[1];
@@ -165,6 +170,13 @@ public class ReportServiceImpl implements ReportService {
         document.add(table);
     }
 
+    /**
+     * 执行 addResultTable 业务逻辑。
+     *
+     * @param document 参数 document。
+     * @param detail 参数 detail。
+     * @param font 参数 font。
+     */
     public void addResultTable(Document document, TaskDetailVO detail, PdfFont font) {
         // 1. 添加标题
         addSectionTitle(document, font, "三、检定数据明细");
@@ -187,9 +199,6 @@ public class ReportServiceImpl implements ReportService {
 
 // ================= 辅助方法 (降低复杂度) =================
 
-    /**
-     * 填充表格数据（处理有数据和无数据的情况）
-     */
     private void fillTableData(Table table, List<TaskDetailVO.ResultInfo> resultList, PdfFont font) {
         if (resultList == null || resultList.isEmpty()) {
             // 无数据：填充一行空占位符
@@ -213,9 +222,6 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
-    /**
-     * 创建带颜色的状态单元格（抽取样式逻辑）
-     */
     private Cell createStatusCell(Integer isPass, PdfFont font) {
         boolean pass = isPass != null && isPass == 1;
         String text = pass ? "合格" : "不合格";
@@ -229,23 +235,14 @@ public class ReportServiceImpl implements ReportService {
                 .setFontColor(color);
     }
 
-    /**
-     * 统一判空格式化（消灭重复的三元运算符）
-     */
     private String formatValue(Object val) {
         return val == null ? "-" : val.toString();
     }
 
-    /**
-     * 特殊处理相别格式
-     */
     private String formatPhase(String phase) {
         return phase == null ? "-" : phase.toUpperCase();
     }
 
-    /**
-     * 封装标题逻辑
-     */
     private void addSectionTitle(Document document, PdfFont font, String titleText) {
         Paragraph title = new Paragraph(titleText)
                 .setFont(font)

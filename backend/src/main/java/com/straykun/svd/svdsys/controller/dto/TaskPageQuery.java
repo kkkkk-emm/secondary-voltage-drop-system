@@ -2,36 +2,49 @@ package com.straykun.svd.svdsys.controller.dto;
 
 import lombok.Data;
 
+/**
+ * 检定任务分页请求参数对象。
+ */
 @Data
 public class TaskPageQuery {
 
+    /**
+     * page 字段。
+     */
     private Integer page = 1;
 
+    /**
+     * 每页大小。
+     */
     private Integer size = 10;
 
     /**
-     * 任务ID（精确查询）
+     * taskId 字段。
      */
     private Long taskId;
 
     /**
-     * 设备编号（模糊查询）
+     * deviceProductNo 字段。
      */
     private String deviceProductNo;
 
     /**
-     * 检定员姓名（模糊查询）
+     * 操作员姓名。
      */
     private String operatorName;
 
+    /**
+     * startDate 字段。
+     */
     private String startDate; // yyyy-MM-dd
 
+    /**
+     * endDate 字段。
+     */
     private String endDate; // yyyy-MM-dd
 
     /**
-     * 0:不合格 1:合格
+     * 是否合格标记。
      */
     private Integer isPass;
 }
-
-

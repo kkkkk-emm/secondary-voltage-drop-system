@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Excel 数据导入控制器
+ * Excel 导入控制器。
  */
 @RestController
 @RequestMapping("/import")
@@ -18,12 +18,20 @@ public class ExcelImportController {
 
     private final ExcelImportService excelImportService;
 
+    /**
+     * 构造函数，初始化 ExcelImportController 所需依赖。
+     *
+     * @param excelImportService 参数 excelImportService。
+     */
     public ExcelImportController(ExcelImportService excelImportService) {
         this.excelImportService = excelImportService;
     }
 
     /**
-     * 预览检定任务数据（不入库）
+     * 执行 previewTasks 业务逻辑。
+     *
+     * @param file 参数 file。
+     * @return 返回统一响应结果。
      */
     @PostMapping("/tasks/preview")
     @PreAuthorize("hasRole('USER')")
@@ -33,7 +41,10 @@ public class ExcelImportController {
     }
 
     /**
-     * 预览设备数据（不入库）
+     * 执行 previewDevices 业务逻辑。
+     *
+     * @param file 参数 file。
+     * @return 返回统一响应结果。
      */
     @PostMapping("/devices/preview")
     @PreAuthorize("hasRole('USER')")
@@ -43,7 +54,10 @@ public class ExcelImportController {
     }
 
     /**
-     * 导入检定任务数据（检测员）
+     * 执行 importTasks 新增处理。
+     *
+     * @param file 参数 file。
+     * @return 返回统一响应结果。
      */
     @PostMapping("/tasks")
     @PreAuthorize("hasRole('USER')")
@@ -54,7 +68,10 @@ public class ExcelImportController {
     }
 
     /**
-     * 导入设备数据（检测员）
+     * 执行 importDevices 新增处理。
+     *
+     * @param file 参数 file。
+     * @return 返回统一响应结果。
      */
     @PostMapping("/devices")
     @PreAuthorize("hasRole('USER')")

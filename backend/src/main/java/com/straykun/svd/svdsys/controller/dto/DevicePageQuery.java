@@ -2,33 +2,34 @@ package com.straykun.svd.svdsys.controller.dto;
 
 import lombok.Data;
 
+/**
+ * 设备分页请求参数对象。
+ */
 @Data
 public class DevicePageQuery {
 
     /**
-     * 当前页（默认1）
+     * page 字段。
      */
     private Integer page = 1;
 
     /**
-     * 每页条数（默认10）
+     * 每页大小。
      */
     private Integer size = 10;
 
     /**
-     * 产品编号（精确查询）
+     * 产品编号。
      */
     private String productNo;
 
     /**
-     * 产品名称（模糊查询）
+     * 产品名称。
      */
     private String productName;
 
     /**
-     * 制造商（模糊查询）
+     * 制造商。
      */
     private String manufacturer;
 }
-
-

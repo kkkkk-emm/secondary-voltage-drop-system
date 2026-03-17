@@ -5,43 +5,43 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * 标准阈值配置表 sys_test_standard
+ * 系统检定标准实体对象。
  */
 @Data
 public class SysTestStandard {
 
     /**
-     * 主键ID
+     * 主键 ID。
      */
     private Long id;
 
     /**
-     * 项目(PT1/PT2/CT1/CT2)
+     * projectType 字段。
      */
     private String projectType;
 
     /**
-     * 档位(100V/5A)
+     * gearLevel 字段。
      */
     private String gearLevel;
 
     /**
-     * 负载百分比 (20%/100%)
+     * loadPercent 字段。
      */
     private String loadPercent;
 
     /**
-     * 数据下限
+     * limitMin 字段。
      */
     private BigDecimal limitMin;
 
     /**
-     * 数据上限
+     * limitMax 字段。
      */
     private BigDecimal limitMax;
 
     /**
-     * 阈值项目
+     * thresholdItem 字段。
      */
     private String thresholdItem;
 }

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 检定任务管理模块
+ * 检定任务控制器。
  */
 @RestController
 @RequestMapping("/task")
@@ -26,12 +26,20 @@ public class TaskController {
 
     private final TaskService taskService;
 
+    /**
+     * 构造函数，初始化 TaskController 所需依赖。
+     *
+     * @param taskService 参数 taskService。
+     */
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
     /**
-     * 提交检定任务（归档，仅检测员）
+     * 执行 submit 新增处理。
+     *
+     * @param dto 参数 dto。
+     * @return 返回统一响应结果。
      */
     @PostMapping("/submit")
     @PreAuthorize("hasRole('USER')")
@@ -42,7 +50,10 @@ public class TaskController {
     }
 
     /**
-     * 分页查询检定记录（检测员查自己的，管理员可用于数据修正模块查看）
+     * 查询 page 相关信息。
+     *
+     * @param query 参数 query。
+     * @return 返回分页结果。
      */
     @GetMapping("/page")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -51,7 +62,10 @@ public class TaskController {
     }
 
     /**
-     * 获取检定任务详情
+     * 查询 detail 相关信息。
+     *
+     * @param id 参数 id。
+     * @return 返回统一响应结果。
      */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -59,5 +73,3 @@ public class TaskController {
         return Result.success(taskService.detail(id));
     }
 }
-
-

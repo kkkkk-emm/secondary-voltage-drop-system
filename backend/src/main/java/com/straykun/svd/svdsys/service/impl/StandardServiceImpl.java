@@ -12,21 +12,39 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 标准配置服务实现类。
+ */
 @Service
 public class StandardServiceImpl implements StandardService {
 
     private final SysTestStandardMapper standardMapper;
 
+    /**
+     * 构造函数，初始化 StandardServiceImpl 所需依赖。
+     *
+     * @param standardMapper 参数 standardMapper。
+     */
     public StandardServiceImpl(SysTestStandardMapper standardMapper) {
         this.standardMapper = standardMapper;
     }
 
+    /**
+     * 查询 listAll 相关信息。
+     *
+     * @return 返回结果列表。
+     */
     @Override
     public List<StandardVO> listAll() {
         List<SysTestStandard> list = standardMapper.selectAll();
         return list.stream().map(this::toVO).collect(Collectors.toList());
     }
 
+    /**
+     * 查询 listGroups 相关信息。
+     *
+     * @return 返回结果列表。
+     */
     @Override
     public List<StandardGroupVO> listGroups() {
         List<SysTestStandard> allStandards = standardMapper.selectAll();
@@ -72,6 +90,14 @@ public class StandardServiceImpl implements StandardService {
         return result;
     }
 
+    /**
+     * 执行 match 业务逻辑。
+     *
+     * @param projectType 参数 projectType。
+     * @param gearLevel 参数 gearLevel。
+     * @param loadPercent 参数 loadPercent。
+     * @return 返回处理结果。
+     */
     @Override
     public StandardLimit match(String projectType, String gearLevel, String loadPercent) {
         SysTestStandard std = standardMapper.match(projectType, gearLevel, loadPercent);
@@ -81,6 +107,14 @@ public class StandardServiceImpl implements StandardService {
         return new StandardLimit(std.getLimitMin(), std.getLimitMax());
     }
 
+    /**
+     * 执行 matchAllThresholds 业务逻辑。
+     *
+     * @param projectType 参数 projectType。
+     * @param gearLevel 参数 gearLevel。
+     * @param loadPercent 参数 loadPercent。
+     * @return 返回处理结果。
+     */
     @Override
     public StandardGroupVO matchAllThresholds(String projectType, String gearLevel, String loadPercent) {
         List<SysTestStandard> items = standardMapper.matchAll(projectType, gearLevel, loadPercent);
@@ -111,6 +145,11 @@ public class StandardServiceImpl implements StandardService {
         return group;
     }
 
+    /**
+     * 执行 update 更新处理。
+     *
+     * @param request 参数 request。
+     */
     @Override
     public void update(StandardUpdateRequest request) {
         // 校验上限必须大于等于下限
@@ -131,5 +170,3 @@ public class StandardServiceImpl implements StandardService {
         return vo;
     }
 }
-
-

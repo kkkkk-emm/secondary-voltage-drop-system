@@ -17,16 +17,16 @@ import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * Spring Security 配置类
+ * Spring Security 安全配置类。
  */
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
     /**
-     * 密码编码器 Bean
+     * 执行 passwordEncoder 业务逻辑。
      *
-     * @return PasswordEncoder
+     * @return 返回处理结果。
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -34,10 +34,10 @@ public class SecurityConfig {
     }
 
     /**
-     * JWT 认证过滤器 Bean
+     * 执行 jwtAuthenticationFilter 业务逻辑。
      *
-     * @param jwtUtil JWT 工具类
-     * @return JwtAuthenticationFilter
+     * @param jwtUtil 参数 jwtUtil。
+     * @return 返回处理结果。
      */
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtUtil jwtUtil) {
@@ -45,12 +45,12 @@ public class SecurityConfig {
     }
 
     /**
-     * 安全过滤链配置
+     * 执行 securityFilterChain 业务逻辑。
      *
-     * @param http                    HttpSecurity
-     * @param jwtAuthenticationFilter JWT 认证过滤器
-     * @return SecurityFilterChain
-     * @throws Exception 异常
+     * @param http 参数 http。
+     * @param jwtAuthenticationFilter 参数 jwtAuthenticationFilter。
+     * @return 返回处理结果。
+     * @throws Exception 异常信息。
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
@@ -71,9 +71,9 @@ public class SecurityConfig {
     }
 
     /**
-     * CORS 配置
+     * 执行 corsConfigurationSource 业务逻辑。
      *
-     * @return CorsConfigurationSource
+     * @return 返回处理结果。
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

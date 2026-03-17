@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 认证控制器。
+ */
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -27,6 +30,13 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * 构造函数，初始化 AuthController 所需依赖。
+     *
+     * @param sysUserMapper 参数 sysUserMapper。
+     * @param jwtUtil 参数 jwtUtil。
+     * @param passwordEncoder 参数 passwordEncoder。
+     */
     public AuthController(SysUserMapper sysUserMapper,
             JwtUtil jwtUtil,
             PasswordEncoder passwordEncoder) {
@@ -36,10 +46,10 @@ public class AuthController {
     }
 
     /**
-     * 用户登录
+     * 执行用户登录认证并返回 token 与用户信息。
      *
-     * @param request 登录请求
-     * @return 登录结果（包含Token和用户信息）
+     * @param request 登录请求参数。
+     * @return 返回统一响应结果。
      */
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody @Valid LoginRequest request) {
@@ -73,9 +83,9 @@ public class AuthController {
     }
 
     /**
-     * 用户登出
+     * 执行退出登录处理。
      *
-     * @return 成功结果
+     * @return 返回统一响应结果。
      */
     @PostMapping("/logout")
     public Result<Void> logout() {

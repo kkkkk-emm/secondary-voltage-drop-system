@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * OCR + 大模型字段抽取服务实现
+ * OCR 提取服务实现类。
  */
 @Service
 public class OcrExtractServiceImpl implements OcrExtractService {
@@ -28,6 +28,13 @@ public class OcrExtractServiceImpl implements OcrExtractService {
     private final OcrTemplateRuleParser ocrTemplateRuleParser;
     private final LlmClient llmClient;
 
+    /**
+     * 构造函数，初始化 OcrExtractServiceImpl 所需依赖。
+     *
+     * @param baiduOcrClient 参数 baiduOcrClient。
+     * @param ocrTemplateRuleParser 参数 ocrTemplateRuleParser。
+     * @param llmClient 参数 llmClient。
+     */
     public OcrExtractServiceImpl(BaiduOcrClient baiduOcrClient,
                                  OcrTemplateRuleParser ocrTemplateRuleParser,
                                  LlmClient llmClient) {
@@ -36,6 +43,12 @@ public class OcrExtractServiceImpl implements OcrExtractService {
         this.llmClient = llmClient;
     }
 
+    /**
+     * 执行 extract 数据处理。
+     *
+     * @param file 参数 file。
+     * @return 返回处理结果。
+     */
     @Override
     public OcrExtractResponseVO extract(MultipartFile file) {
         validateImageFile(file);

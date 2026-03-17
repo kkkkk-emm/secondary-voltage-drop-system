@@ -5,44 +5,39 @@ import com.straykun.svd.svdsys.controller.vo.ExcelPreviewVO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * Excel 导入服务接口
+ * Excel导入服务接口，定义业务能力。
  */
 public interface ExcelImportService {
 
     /**
-     * 预览检定任务 Excel 数据（不入库）
+     * 执行 previewTasks 业务逻辑。
      *
-     * @param file Excel 文件
-     * @return 预览结果
+     * @param file 参数 file。
+     * @return 返回处理结果。
      */
     ExcelPreviewVO previewTasks(MultipartFile file);
 
     /**
-     * 预览设备 Excel 数据（不入库）
+     * 执行 previewDevices 业务逻辑。
      *
-     * @param file Excel 文件
-     * @return 预览结果
+     * @param file 参数 file。
+     * @return 返回处理结果。
      */
     ExcelPreviewVO previewDevices(MultipartFile file);
 
     /**
-     * 从 Excel 导入检定任务数据
-     * Excel 格式要求：
-     * | 设备编号 | 计量点编号 | 送检日期 | 测试日期 | 温度 | 湿度 | tanφ | r% |
-     * | 相别 | 项目类型 | 档位 | 负载% | f(%) | δ(分) | dU(%) | Upt | Uyb |
+     * 执行 importTasks 新增处理。
      *
-     * @param file Excel 文件（.xlsx）
-     * @return 导入结果
+     * @param file 参数 file。
+     * @return 返回处理结果。
      */
     ExcelImportResultVO importTasks(MultipartFile file);
 
     /**
-     * 从 Excel 导入设备数据
-     * Excel 格式要求：
-     * | 产品编号 | 产品名称 | 型号 | 制造商 | 产地 | 生产日期 |
+     * 执行 importDevices 新增处理。
      *
-     * @param file Excel 文件（.xlsx）
-     * @return 导入结果
+     * @param file 参数 file。
+     * @return 返回处理结果。
      */
     ExcelImportResultVO importDevices(MultipartFile file);
 }

@@ -4,16 +4,15 @@ import com.straykun.svd.svdsys.controller.vo.OcrExtractResponseVO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * 图片 OCR + 大模型抽取服务
+ * OCR提取服务接口，定义业务能力。
  */
 public interface OcrExtractService {
 
     /**
-     * 从图片中识别文本并抽取固定字段
+     * 执行 extract 数据处理。
      *
-     * @param file 图片文件
-     * @return 提取结果
+     * @param file 参数 file。
+     * @return 返回处理结果。
      */
     OcrExtractResponseVO extract(MultipartFile file);
 }
-

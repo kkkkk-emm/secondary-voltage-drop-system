@@ -7,10 +7,16 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * 使用 SHA-256 的自定义密码加密器（不可逆，结果唯一确定）
+ * SHA-256 密码编码器。
  */
 public class Sha256PasswordEncoder implements PasswordEncoder {
 
+    /**
+     * 执行 encode 业务逻辑。
+     *
+     * @param rawPassword 参数 rawPassword。
+     * @return 返回字符串结果。
+     */
     @Override
     public String encode(CharSequence rawPassword) {
         try {
@@ -22,6 +28,13 @@ public class Sha256PasswordEncoder implements PasswordEncoder {
         }
     }
 
+    /**
+     * 执行 matches 业务逻辑。
+     *
+     * @param rawPassword 参数 rawPassword。
+     * @param encodedPassword 参数 encodedPassword。
+     * @return 返回校验结果。
+     */
     @Override
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
         if (encodedPassword == null) {
@@ -43,5 +56,3 @@ public class Sha256PasswordEncoder implements PasswordEncoder {
         return sb.toString();
     }
 }
-
-

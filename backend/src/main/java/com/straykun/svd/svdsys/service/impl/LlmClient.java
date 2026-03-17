@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 /**
- * 大模型客户端（OpenAI 兼容 /chat/completions）
+ * LLM 客户端。
  */
 @Component
 public class LlmClient {
@@ -39,6 +39,11 @@ public class LlmClient {
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
 
+    /**
+     * 构造函数，初始化 LlmClient 所需依赖。
+     *
+     * @param objectMapper 参数 objectMapper。
+     */
     public LlmClient(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
@@ -47,7 +52,10 @@ public class LlmClient {
     }
 
     /**
-     * 兼容旧 7 字段抽取，基于 22 字段映射得到
+     * 从 OCR 原文中抽取兼容旧结构的键值对结果。
+     *
+     * @param ocrText OCR 拼接文本。
+     * @return 返回兼容键值对映射。
      */
     public Map<String, String> extractPairs(String ocrText) {
         Map<String, String> detailed = extractDetailedPairs(ocrText);
@@ -55,7 +63,10 @@ public class LlmClient {
     }
 
     /**
-     * 从 OCR 文本中抽取固定 22 字段
+     * 从 OCR 原文中抽取 22 个固定字段的明细键值对。
+     *
+     * @param ocrText OCR 拼接文本。
+     * @return 返回明细键值对映射。
      */
     public Map<String, String> extractDetailedPairs(String ocrText) {
         validateConfig();

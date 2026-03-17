@@ -3,15 +3,14 @@ package com.straykun.svd.svdsys.service;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * OCR 接口限流服务
+ * OCR速率限制服务接口，定义业务能力。
  */
 public interface OcrRateLimitService {
 
     /**
-     * 校验当前请求是否超过 OCR 频率限制
+     * 执行 check 校验逻辑。
      *
-     * @param request 当前 HTTP 请求
+     * @param request 参数 request。
      */
     void check(HttpServletRequest request);
 }
-

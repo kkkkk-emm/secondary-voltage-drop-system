@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * 百度 OCR 客户端
+ * 百度 OCR 客户端。
  */
 @Component
 public class BaiduOcrClient {
@@ -48,6 +48,11 @@ public class BaiduOcrClient {
     private volatile String accessToken;
     private volatile long tokenExpireAtEpochSecond;
 
+    /**
+     * 构造函数，初始化 BaiduOcrClient 所需依赖。
+     *
+     * @param objectMapper 参数 objectMapper。
+     */
     public BaiduOcrClient(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
@@ -56,7 +61,10 @@ public class BaiduOcrClient {
     }
 
     /**
-     * 调用百度 OCR，返回原始响应
+     * 执行 recognize 业务逻辑。
+     *
+     * @param file 参数 file。
+     * @return 返回处理结果。
      */
     public JsonNode recognize(MultipartFile file) {
         String token = getAccessToken();
@@ -97,7 +105,10 @@ public class BaiduOcrClient {
     }
 
     /**
-     * 将 words_result 按顺序拼接成纯文本
+     * 执行 extractText 数据处理。
+     *
+     * @param rawOcr 参数 rawOcr。
+     * @return 返回字符串结果。
      */
     public String extractText(JsonNode rawOcr) {
         JsonNode wordsResult = rawOcr.path("words_result");
@@ -177,4 +188,3 @@ public class BaiduOcrClient {
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }
-

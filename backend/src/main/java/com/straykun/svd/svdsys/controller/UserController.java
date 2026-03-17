@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 
 /**
- * 用户相关接口（基础能力）
+ * 用户管理控制器。
  */
 @RestController
 @RequestMapping("/user")
@@ -30,16 +30,22 @@ public class UserController {
     @Value("${svd.user.default-password}")
     private String defaultPassword;
 
+    /**
+     * 构造函数，初始化 UserController 所需依赖。
+     *
+     * @param sysUserMapper 参数 sysUserMapper。
+     * @param passwordEncoder 参数 passwordEncoder。
+     */
     public UserController(SysUserMapper sysUserMapper, PasswordEncoder passwordEncoder) {
         this.sysUserMapper = sysUserMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * 用户分页查询（仅管理员）
+     * 查询 page 相关信息。
      *
-     * @param query 查询条件
-     * @return 用户列表分页结果
+     * @param query 参数 query。
+     * @return 返回分页结果。
      */
     @GetMapping("/page")
     @PreAuthorize("hasRole('ADMIN')")
@@ -72,10 +78,10 @@ public class UserController {
     }
 
     /**
-     * 新增用户（仅管理员）
+     * 执行 create 新增处理。
      *
-     * @param request 用户创建请求
-     * @return 成功结果
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -97,10 +103,10 @@ public class UserController {
     }
 
     /**
-     * 当前登录用户修改密码
+     * 执行 changePassword 更新处理。
      *
-     * @param request 密码修改请求
-     * @return 成功结果
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PutMapping("/password")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -125,10 +131,10 @@ public class UserController {
     }
 
     /**
-     * 修改用户状态（仅管理员）
+     * 执行 updateStatus 更新处理。
      *
-     * @param request 状态更新请求
-     * @return 成功结果
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PutMapping("/status")
     @PreAuthorize("hasRole('ADMIN')")
@@ -139,10 +145,10 @@ public class UserController {
     }
 
     /**
-     * 重置密码为默认值（仅管理员）
+     * 执行 resetPassword 更新处理。
      *
-     * @param request 重置密码请求
-     * @return 成功结果
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PutMapping("/reset-password")
     @PreAuthorize("hasRole('ADMIN')")

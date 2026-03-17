@@ -31,6 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 检定任务服务实现类。
+ */
 @Service
 public class TaskServiceImpl implements TaskService {
 
@@ -49,6 +52,15 @@ public class TaskServiceImpl implements TaskService {
     // ==========================================
     // 2. 构造函数
     // ==========================================
+    /**
+     * 构造函数，初始化 TaskServiceImpl 所需依赖。
+     *
+     * @param deviceMapper 参数 deviceMapper。
+     * @param taskMapper 参数 taskMapper。
+     * @param resultMapper 参数 resultMapper。
+     * @param standardMapper 参数 standardMapper。
+     * @param userMapper 参数 userMapper。
+     */
     public TaskServiceImpl(BizDeviceMapper deviceMapper,
                            BizTestTaskMapper taskMapper,
                            BizTestResultMapper resultMapper,
@@ -66,7 +78,9 @@ public class TaskServiceImpl implements TaskService {
     // ==========================================
 
     /**
-     * 提交检定任务（含实时自动校验）
+     * 执行 submit 新增处理。
+     *
+     * @param dto 参数 dto。
      */
     @Override
     @Transactional
@@ -132,7 +146,10 @@ public class TaskServiceImpl implements TaskService {
     }
 
     /**
-     * 分页查询检定记录
+     * 查询 page 相关信息。
+     *
+     * @param query 参数 query。
+     * @return 返回分页结果。
      */
     @Override
     public PageResult<TaskListItemVO> page(TaskPageQuery query) {
@@ -191,7 +208,10 @@ public class TaskServiceImpl implements TaskService {
     }
 
     /**
-     * 获取检定任务详情
+     * 查询 detail 相关信息。
+     *
+     * @param id 参数 id。
+     * @return 返回处理结果。
      */
     @Override
     public TaskDetailVO detail(Long id) {
@@ -246,7 +266,9 @@ public class TaskServiceImpl implements TaskService {
     }
 
     /**
-     * 数据修正（管理员专用）
+     * 执行 correctResult 更新处理。
+     *
+     * @param request 参数 request。
      */
     @Override
     @Transactional
@@ -291,9 +313,6 @@ public class TaskServiceImpl implements TaskService {
     // 4. 私有业务拆分方法 (Private Business Methods)
     // ==========================================
 
-    /**
-     * 多项阈值校验逻辑 (针对 DTO)
-     */
     private boolean checkPassAllItems(List<SysTestStandard> thresholdItems, ResultItemDTO item) {
         // 1. 防御性判断
         if (CollectionUtils.isEmpty(thresholdItems)) {
@@ -327,9 +346,6 @@ public class TaskServiceImpl implements TaskService {
         return true;
     }
 
-    /**
-     * 多项阈值校验逻辑（针对 Entity，用于数据修正后的重新校验）
-     */
     private boolean checkPassAllItemsByResult(List<SysTestStandard> thresholdItems, BizTestResult result) {
         // 1. 防御性判断
         if (CollectionUtils.isEmpty(thresholdItems)) {
@@ -367,9 +383,6 @@ public class TaskServiceImpl implements TaskService {
     // 5. 纯辅助/工具方法 (Private Helpers)
     // ==========================================
 
-    /**
-     * 根据 Key 从 ResultItemDTO 对象中获取值
-     */
     private BigDecimal getValueFromDto(ResultItemDTO item, String key) {
         if (item == null) return BigDecimal.ZERO;
         BigDecimal target = switch (key) {
@@ -383,9 +396,6 @@ public class TaskServiceImpl implements TaskService {
         return target != null ? target : BigDecimal.ZERO;
     }
 
-    /**
-     * 根据 Key 从 BizTestResult 获取对应的数值
-     */
     private BigDecimal getValueFromBizResult(BizTestResult result, String key) {
         if (result == null) return BigDecimal.ZERO;
         BigDecimal target = switch (key) {

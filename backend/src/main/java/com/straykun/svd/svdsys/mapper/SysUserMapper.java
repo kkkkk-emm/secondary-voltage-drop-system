@@ -4,34 +4,37 @@ import com.straykun.svd.svdsys.domain.SysUser;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+/**
+ * 系统用户数据访问接口，定义持久化操作。
+ */
 @Mapper
 public interface SysUserMapper {
 
     /**
-     * 根据用户名查询用户
+     * 查询 selectByUsername 相关信息。
      *
-     * @param username 用户名
-     * @return 用户信息
+     * @param username 参数 username。
+     * @return 返回处理结果。
      */
     SysUser selectByUsername(@Param("username") String username);
 
     /**
-     * 根据ID查询用户
+     * 查询 selectById 相关信息。
      *
-     * @param id 用户ID
-     * @return 用户信息
+     * @param id 参数 id。
+     * @return 返回处理结果。
      */
     SysUser selectById(@Param("id") Long id);
 
     /**
-     * 分页查询用户列表
+     * 查询 selectPage 相关信息。
      *
-     * @param offset   偏移量
-     * @param size     每页大小
-     * @param username 用户名
-     * @param role     角色
-     * @param status   状态
-     * @return 用户列表
+     * @param offset 参数 offset。
+     * @param size 参数 size。
+     * @param username 参数 username。
+     * @param role 参数 role。
+     * @param status 参数 status。
+     * @return 返回结果列表。
      */
     java.util.List<SysUser> selectPage(@Param("offset") long offset,
             @Param("size") long size,
@@ -40,40 +43,40 @@ public interface SysUserMapper {
             @Param("status") Integer status);
 
     /**
-     * 统计用户数量
+     * 查询 count 相关信息。
      *
-     * @param username 用户名
-     * @param role     角色
-     * @param status   状态
-     * @return 用户数量
+     * @param username 参数 username。
+     * @param role 参数 role。
+     * @param status 参数 status。
+     * @return 返回统计结果。
      */
     long count(@Param("username") String username,
             @Param("role") Integer role,
             @Param("status") Integer status);
 
     /**
-     * 新增用户
+     * 执行 insert 新增处理。
      *
-     * @param user 用户信息
-     * @return 影响行数
+     * @param user 参数 user。
+     * @return 返回处理结果数量。
      */
     int insert(SysUser user);
 
     /**
-     * 更新用户状态
+     * 执行 updateStatus 更新处理。
      *
-     * @param id     用户ID
-     * @param status 状态
-     * @return 影响行数
+     * @param id 参数 id。
+     * @param status 参数 status。
+     * @return 返回处理结果数量。
      */
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
 
     /**
-     * 更新用户密码
+     * 执行 updatePassword 更新处理。
      *
-     * @param id       用户ID
-     * @param password 密码
-     * @return 影响行数
+     * @param id 参数 id。
+     * @param password 参数 password。
+     * @return 返回处理结果数量。
      */
     int updatePassword(@Param("id") Long id, @Param("password") String password);
 }

@@ -18,7 +18,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 检定报告预览/下载
+ * 报告控制器。
  */
 @RestController
 @RequestMapping("/report")
@@ -30,13 +30,23 @@ public class ReportController {
     private final TaskService taskService;
     private final ReportService reportService;
 
+    /**
+     * 构造函数，初始化 ReportController 所需依赖。
+     *
+     * @param taskService 参数 taskService。
+     * @param reportService 参数 reportService。
+     */
     public ReportController(TaskService taskService, ReportService reportService) {
         this.taskService = taskService;
         this.reportService = reportService;
     }
 
     /**
-     * 预览 PDF 检定证书（在浏览器中打开）
+     * 执行 preview 业务逻辑。
+     *
+     * @param taskId 参数 taskId。
+     * @param response 参数 response。
+     * @throws IOException 异常信息。
      */
     @GetMapping("/preview/{taskId}")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -53,7 +63,7 @@ public class ReportController {
             // 先生成到内存，避免流被占用后无法修改响应
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             reportService.generatePdf(detail, baos);
-            
+
             byte[] pdfBytes = baos.toByteArray();
             response.setContentType("application/pdf");
             response.setContentLength(pdfBytes.length);
@@ -70,7 +80,11 @@ public class ReportController {
     }
 
     /**
-     * 下载 PDF 检定证书
+     * 执行 download 业务逻辑。
+     *
+     * @param taskId 参数 taskId。
+     * @param response 参数 response。
+     * @throws IOException 异常信息。
      */
     @GetMapping("/download/{taskId}")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -94,7 +108,7 @@ public class ReportController {
             // 先生成到内存
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             reportService.generatePdf(detail, baos);
-            
+
             byte[] pdfBytes = baos.toByteArray();
             response.setContentType("application/pdf");
             response.setContentLength(pdfBytes.length);
@@ -110,5 +124,3 @@ public class ReportController {
         }
     }
 }
-
-

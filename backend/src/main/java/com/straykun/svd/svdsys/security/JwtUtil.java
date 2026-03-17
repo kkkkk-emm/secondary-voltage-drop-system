@@ -12,8 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
- * JWT 工具类
- * 提供 Token 生成和解析功能
+ * JWT 工具类。
  */
 @Component
 public class JwtUtil {
@@ -25,10 +24,10 @@ public class JwtUtil {
     private long expireSeconds;
 
     /**
-     * 生成 Token
+     * 执行 generateToken 业务逻辑。
      *
-     * @param user 用户信息
-     * @return Token 字符串
+     * @param user 参数 user。
+     * @return 返回字符串结果。
      */
     public String generateToken(SysUser user) {
         Date now = new Date();
@@ -45,10 +44,10 @@ public class JwtUtil {
     }
 
     /**
-     * 解析 Token
+     * 执行 parseToken 数据处理。
      *
-     * @param token Token 字符串
-     * @return Claims 对象
+     * @param token 参数 token。
+     * @return 返回处理结果。
      */
     public Claims parseToken(String token) {
         return Jwts.parserBuilder()

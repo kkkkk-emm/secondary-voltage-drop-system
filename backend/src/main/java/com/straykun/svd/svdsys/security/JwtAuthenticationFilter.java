@@ -17,25 +17,29 @@ import java.io.IOException;
 import java.util.Collections;
 
 /**
- * JWT 认证过滤器
- * 拦截请求，解析 Token 并设置 SecurityContext
+ * JWT 认证过滤器。
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
+    /**
+     * 构造函数，初始化 JwtAuthenticationFilter 所需依赖。
+     *
+     * @param jwtUtil 参数 jwtUtil。
+     */
     public JwtAuthenticationFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
     /**
-     * 过滤器执行逻辑
+     * 基于请求头中的 Bearer Token 完成鉴权上下文注入。
      *
-     * @param request     请求
-     * @param response    响应
-     * @param filterChain 过滤器链
-     * @throws ServletException Servlet异常
-     * @throws IOException      IO异常
+     * @param request 当前 HTTP 请求。
+     * @param response 当前 HTTP 响应。
+     * @param filterChain 过滤器链。
+     * @throws ServletException Servlet 处理异常。
+     * @throws IOException IO 处理异常。
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request,

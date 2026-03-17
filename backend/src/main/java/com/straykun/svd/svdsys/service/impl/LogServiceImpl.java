@@ -16,15 +16,29 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 日志服务实现类。
+ */
 @Service
 public class LogServiceImpl implements LogService {
 
     private final SysLogMapper sysLogMapper;
 
+    /**
+     * 构造函数，初始化 LogServiceImpl 所需依赖。
+     *
+     * @param sysLogMapper 参数 sysLogMapper。
+     */
     public LogServiceImpl(SysLogMapper sysLogMapper) {
         this.sysLogMapper = sysLogMapper;
     }
 
+    /**
+     * 查询 page 相关信息。
+     *
+     * @param query 参数 query。
+     * @return 返回分页结果。
+     */
     @Override
     public PageResult<LogVO> page(LogPageQuery query) {
         long offset = (long) (query.getPage() - 1) * query.getSize();
@@ -52,4 +66,3 @@ public class LogServiceImpl implements LogService {
         return PageResult.of(total, query.getSize(), query.getPage(), voList);
     }
 }
-

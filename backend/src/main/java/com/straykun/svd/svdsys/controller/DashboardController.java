@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 数据可视化接口（仅管理员）
+ * 看板控制器。
  */
 @RestController
 @RequestMapping("/dashboard")
@@ -17,12 +17,19 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
 
+    /**
+     * 构造函数，初始化 DashboardController 所需依赖。
+     *
+     * @param dashboardService 参数 dashboardService。
+     */
     public DashboardController(DashboardService dashboardService) {
         this.dashboardService = dashboardService;
     }
 
     /**
-     * 获取仪表盘统计数据
+     * 查询 getStats 相关信息。
+     *
+     * @return 返回统一响应结果。
      */
     @GetMapping("/stats")
     @PreAuthorize("hasRole('ADMIN')")

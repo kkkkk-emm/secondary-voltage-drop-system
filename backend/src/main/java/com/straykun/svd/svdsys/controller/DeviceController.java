@@ -13,11 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 被检设备管理
- *
- * 根据用例图：该模块主要由"检测员"使用。
- * 权限约定：
- * - 所有设备管理接口仅检测员(USER)可访问
+ * 设备控制器。
  */
 @RestController
 @RequestMapping("/device")
@@ -25,12 +21,20 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
+    /**
+     * 构造函数，初始化 DeviceController 所需依赖。
+     *
+     * @param deviceService 参数 deviceService。
+     */
     public DeviceController(DeviceService deviceService) {
         this.deviceService = deviceService;
     }
 
     /**
-     * 分页查询设备列表（仅检测员）
+     * 查询 page 相关信息。
+     *
+     * @param query 参数 query。
+     * @return 返回分页结果。
      */
     @GetMapping("/page")
     @PreAuthorize("hasRole('USER')")
@@ -39,7 +43,9 @@ public class DeviceController {
     }
 
     /**
-     * 获取所有设备列表（用于下拉选择，仅检测员）
+     * 查询 list 相关信息。
+     *
+     * @return 返回统一响应结果。
      */
     @GetMapping("/list")
     @PreAuthorize("hasRole('USER')")
@@ -48,7 +54,10 @@ public class DeviceController {
     }
 
     /**
-     * 新增设备档案（仅检测员）
+     * 执行 add 业务逻辑。
+     *
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PostMapping
     @PreAuthorize("hasRole('USER')")
@@ -59,7 +68,10 @@ public class DeviceController {
     }
 
     /**
-     * 修改设备档案（仅检测员）
+     * 执行 update 更新处理。
+     *
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PutMapping
     @PreAuthorize("hasRole('USER')")
@@ -70,7 +82,10 @@ public class DeviceController {
     }
 
     /**
-     * 删除设备（仅检测员）
+     * 执行 delete 删除处理。
+     *
+     * @param id 参数 id。
+     * @return 返回统一响应结果。
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
@@ -80,5 +95,3 @@ public class DeviceController {
         return Result.success();
     }
 }
-
-

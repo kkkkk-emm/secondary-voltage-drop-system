@@ -7,53 +7,54 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Excel 预览结果 VO
+ * Excel预览响应视图对象。
  */
 @Data
 public class ExcelPreviewVO {
 
     /**
-     * 总行数（不含表头）
+     * totalRows 字段。
      */
     private int totalRows;
 
-    /**
-     * 表头列表
-     */
     private List<String> headers = new ArrayList<>();
 
-    /**
-     * 数据行（每行是一个 Map，key 为列名）
-     */
     private List<Map<String, Object>> rows = new ArrayList<>();
 
-    /**
-     * 校验错误列表
-     */
     private List<ValidationError> validationErrors = new ArrayList<>();
 
     /**
-     * 是否校验通过（无错误可以导入）
+     * valid 字段。
      */
     private boolean valid;
 
+    /**
+     * ValidationError响应视图对象。
+     */
     @Data
     public static class ValidationError {
         /**
-         * 行号（Excel 中的行号，从 2 开始，1 为表头）
+         * rowNum 字段。
          */
         private int rowNum;
 
         /**
-         * 列名
+         * columnName 字段。
          */
         private String columnName;
 
         /**
-         * 错误信息
+         * 响应消息。
          */
         private String message;
 
+        /**
+         * 构造函数，初始化 ValidationError 所需依赖。
+         *
+         * @param rowNum 参数 rowNum。
+         * @param columnName 参数 columnName。
+         * @param message 参数 message。
+         */
         public ValidationError(int rowNum, String columnName, String message) {
             this.rowNum = rowNum;
             this.columnName = columnName;
@@ -61,12 +62,19 @@ public class ExcelPreviewVO {
         }
     }
 
+    /**
+     * 执行 addValidationError 业务逻辑。
+     *
+     * @param rowNum 参数 rowNum。
+     * @param columnName 参数 columnName。
+     * @param message 参数 message。
+     */
     public void addValidationError(int rowNum, String columnName, String message) {
         validationErrors.add(new ValidationError(rowNum, columnName, message));
     }
 
     /**
-     * 计算是否校验通过
+     * 执行 calculateValid 业务逻辑。
      */
     public void calculateValid() {
         this.valid = validationErrors.isEmpty();

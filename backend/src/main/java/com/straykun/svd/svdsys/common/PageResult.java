@@ -6,36 +6,30 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 简单分页结果封装，结构与前端/接口文档约定一致
+ * 分页响应结果对象。
  */
 @Data
 public class PageResult<T> {
 
-    /**
-     * 总记录数
-     */
     private long total;
 
-    /**
-     * 每页大小
-     */
     private long size;
 
-    /**
-     * 当前页码
-     */
     private long current;
 
-    /**
-     * 总页数
-     */
     private long pages;
 
-    /**
-     * 当前页数据
-     */
     private List<T> records;
 
+    /**
+     * 执行 of 业务逻辑。
+     *
+     * @param total 参数 total。
+     * @param size 参数 size。
+     * @param current 参数 current。
+     * @param records 参数 records。
+     * @return 返回分页结果。
+     */
     public static <T> PageResult<T> of(long total, long size, long current, List<T> records) {
         PageResult<T> r = new PageResult<>();
         r.setTotal(total);

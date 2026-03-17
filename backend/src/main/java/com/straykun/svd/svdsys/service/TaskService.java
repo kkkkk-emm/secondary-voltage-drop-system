@@ -7,35 +7,38 @@ import com.straykun.svd.svdsys.controller.dto.TaskPageQuery;
 import com.straykun.svd.svdsys.controller.vo.TaskDetailVO;
 import com.straykun.svd.svdsys.controller.vo.TaskListItemVO;
 
+/**
+ * 检定任务服务接口，定义业务能力。
+ */
 public interface TaskService {
 
     /**
-     * 提交检测任务
+     * 执行 submit 新增处理。
      *
-     * @param dto 任务信息
+     * @param dto 参数 dto。
      */
     void submit(TaskCreateDTO dto);
 
     /**
-     * 分页查询任务列表
+     * 查询 page 相关信息。
      *
-     * @param query 查询条件
-     * @return 任务列表分页结果
+     * @param query 参数 query。
+     * @return 返回分页结果。
      */
     PageResult<TaskListItemVO> page(TaskPageQuery query);
 
     /**
-     * 查询任务详情
+     * 查询 detail 相关信息。
      *
-     * @param id 任务ID
-     * @return 任务详情
+     * @param id 参数 id。
+     * @return 返回处理结果。
      */
     TaskDetailVO detail(Long id);
 
     /**
-     * 数据修正（管理员专用）
+     * 执行 correctResult 更新处理。
      *
-     * @param request 修正请求
+     * @param request 参数 request。
      */
     void correctResult(ResultCorrectRequest request);
 }

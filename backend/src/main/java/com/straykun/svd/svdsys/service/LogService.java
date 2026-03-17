@@ -7,13 +7,15 @@ import com.straykun.svd.svdsys.controller.vo.LogVO;
 import java.util.List;
 
 /**
- * 系统日志服务
+ * 日志服务接口，定义业务能力。
  */
 public interface LogService {
 
     /**
-     * 分页查询日志
+     * 查询 page 相关信息。
+     *
+     * @param query 参数 query。
+     * @return 返回分页结果。
      */
     PageResult<LogVO> page(LogPageQuery query);
 }
-

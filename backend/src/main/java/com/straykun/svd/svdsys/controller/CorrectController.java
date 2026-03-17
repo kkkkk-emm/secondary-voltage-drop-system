@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 数据修正模块（管理员专用）
+ * 数据修正控制器。
  */
 @RestController
 @RequestMapping("/correct")
@@ -20,12 +20,20 @@ public class CorrectController {
 
     private final TaskService taskService;
 
+    /**
+     * 构造函数，初始化 CorrectController 所需依赖。
+     *
+     * @param taskService 参数 taskService。
+     */
     public CorrectController(TaskService taskService) {
         this.taskService = taskService;
     }
 
     /**
-     * 修正检测结果数据
+     * 执行 correctResult 更新处理。
+     *
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PostMapping("/result")
     @PreAuthorize("hasRole('ADMIN')")

@@ -17,6 +17,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 设备服务实现类。
+ */
 @Service
 public class DeviceServiceImpl implements DeviceService {
 
@@ -24,10 +27,21 @@ public class DeviceServiceImpl implements DeviceService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /**
+     * 构造函数，初始化 DeviceServiceImpl 所需依赖。
+     *
+     * @param bizDeviceMapper 参数 bizDeviceMapper。
+     */
     public DeviceServiceImpl(BizDeviceMapper bizDeviceMapper) {
         this.bizDeviceMapper = bizDeviceMapper;
     }
 
+    /**
+     * 查询 page 相关信息。
+     *
+     * @param query 参数 query。
+     * @return 返回分页结果。
+     */
     @Override
     public PageResult<DeviceVO> page(DevicePageQuery query) {
         long current = query.getPage() == null || query.getPage() <= 0 ? 1 : query.getPage();
@@ -41,6 +55,11 @@ public class DeviceServiceImpl implements DeviceService {
         return PageResult.of(total, size, current, records);
     }
 
+    /**
+     * 执行 add 业务逻辑。
+     *
+     * @param request 参数 request。
+     */
     @Override
     public void add(DeviceSaveRequest request) {
         // 唯一性校验：产品编号不能重复
@@ -60,6 +79,11 @@ public class DeviceServiceImpl implements DeviceService {
         bizDeviceMapper.insert(device);
     }
 
+    /**
+     * 执行 update 更新处理。
+     *
+     * @param request 参数 request。
+     */
     @Override
     public void update(DeviceUpdateRequest request) {
         BizDevice device = bizDeviceMapper.selectById(request.getId());
@@ -86,11 +110,21 @@ public class DeviceServiceImpl implements DeviceService {
         bizDeviceMapper.update(device);
     }
 
+    /**
+     * 执行 delete 删除处理。
+     *
+     * @param id 参数 id。
+     */
     @Override
     public void delete(Long id) {
         bizDeviceMapper.deleteById(id);
     }
 
+    /**
+     * 查询 listAll 相关信息。
+     *
+     * @return 返回结果列表。
+     */
     @Override
     public List<DeviceVO> listAll() {
         List<BizDevice> list = bizDeviceMapper.selectAll();
@@ -108,5 +142,3 @@ public class DeviceServiceImpl implements DeviceService {
         return vo;
     }
 }
-
-

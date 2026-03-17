@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 /**
- * OCR 接口固定窗口限流实现（Redis）
+ * OCR 限流服务实现类。
  */
 @Service
 public class OcrRateLimitServiceImpl implements OcrRateLimitService {
@@ -44,11 +44,21 @@ public class OcrRateLimitServiceImpl implements OcrRateLimitService {
     @Value("${ocr.rate-limit.key-prefix:svd:rate:ocr}")
     private String keyPrefix;
 
+    /**
+     * 构造函数，初始化 OcrRateLimitServiceImpl 所需依赖。
+     *
+     * @param stringRedisTemplate 参数 stringRedisTemplate。
+     */
     public OcrRateLimitServiceImpl(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
         this.counterScript = buildCounterScript();
     }
 
+    /**
+     * 执行 check 校验逻辑。
+     *
+     * @param request 参数 request。
+     */
     @Override
     public void check(HttpServletRequest request) {
         if (!rateLimitEnabled) {
@@ -127,4 +137,3 @@ public class OcrRateLimitServiceImpl implements OcrRateLimitService {
         return StringUtils.hasText(ip) && !UNKNOWN.equalsIgnoreCase(ip.trim());
     }
 }
-

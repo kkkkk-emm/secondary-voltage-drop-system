@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 数据可视化统计服务实现
+ * 看板服务实现类。
  */
 @Service
 public class DashboardServiceImpl implements DashboardService {
@@ -24,6 +24,13 @@ public class DashboardServiceImpl implements DashboardService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /**
+     * 构造函数，初始化 DashboardServiceImpl 所需依赖。
+     *
+     * @param deviceMapper 参数 deviceMapper。
+     * @param taskMapper 参数 taskMapper。
+     * @param userMapper 参数 userMapper。
+     */
     public DashboardServiceImpl(BizDeviceMapper deviceMapper,
                                  BizTestTaskMapper taskMapper,
                                  SysUserMapper userMapper) {
@@ -32,6 +39,11 @@ public class DashboardServiceImpl implements DashboardService {
         this.userMapper = userMapper;
     }
 
+    /**
+     * 查询 getStats 相关信息。
+     *
+     * @return 返回处理结果。
+     */
     @Override
     public DashboardStatsVO getStats() {
         DashboardStatsVO stats = new DashboardStatsVO();

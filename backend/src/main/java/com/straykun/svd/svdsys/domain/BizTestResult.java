@@ -5,58 +5,58 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 /**
- * 检测结果明细表 biz_test_result
+ * 业务检定结果实体对象。
  */
 @Data
 public class BizTestResult {
 
     /**
-     * 主键ID
+     * 主键 ID。
      */
     private Long id;
 
     /**
-     * 任务ID
+     * taskId 字段。
      */
     private Long taskId;
 
     /**
-     * 标准ID
+     * standardId 字段。
      */
     private Long standardId;
 
     /**
-     * 相位(A/B/C)
+     * 相别。
      */
     private String phase;
 
     /**
-     * 比差 f(%)
+     * f(%) 测量值。
      */
     private BigDecimal valF;
 
     /**
-     * 角差 δ(')
+     * δ(分) 测量值。
      */
     private BigDecimal valDelta;
 
     /**
-     * 压降 ΔU(%)
+     * dU(%) 测量值。
      */
     private BigDecimal valDu;
 
     /**
-     * PT二次电压 Upt(V)
+     * Upt 测量值。
      */
     private BigDecimal valUpt;
 
     /**
-     * 仪表端电压 Uyb(V)
+     * Uyb 测量值。
      */
     private BigDecimal valUyb;
 
     /**
-     * 是否合格 1:合格 0:不合格
+     * 是否合格标记。
      */
     private Integer isPass;
 }

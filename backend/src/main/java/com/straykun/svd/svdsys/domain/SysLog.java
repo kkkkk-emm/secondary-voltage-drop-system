@@ -5,48 +5,48 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * 系统操作日志表 sys_log
+ * 系统日志注解。
  */
 @Data
 public class SysLog {
 
     /**
-     * 主键ID
+     * 主键 ID。
      */
     private Long id;
 
     /**
-     * 用户名
+     * 用户名。
      */
     private String username;
 
     /**
-     * 用户操作
+     * operation 字段。
      */
     private String operation;
 
     /**
-     * 请求方法
+     * method 字段。
      */
     private String method;
 
     /**
-     * 请求参数
+     * params 字段。
      */
     private String params;
 
     /**
-     * 执行时长(毫秒)
+     * time 字段。
      */
     private Long time;
 
     /**
-     * IP地址
+     * ip 字段。
      */
     private String ip;
 
     /**
-     * 创建时间
+     * createTime 字段。
      */
     private LocalDateTime createTime;
 }

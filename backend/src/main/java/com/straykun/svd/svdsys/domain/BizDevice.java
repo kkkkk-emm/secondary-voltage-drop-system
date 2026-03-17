@@ -6,48 +6,48 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * 被检查设备档案表 biz_device
+ * 业务设备实体对象。
  */
 @Data
 public class BizDevice {
 
     /**
-     * 主键ID
+     * 主键 ID。
      */
     private Long id;
 
     /**
-     * 产品编号
+     * 产品编号。
      */
     private String productNo;
 
     /**
-     * 产品名称
+     * 产品名称。
      */
     private String productName;
 
     /**
-     * 规格型号
+     * 型号。
      */
     private String model;
 
     /**
-     * 生产厂家
+     * 制造商。
      */
     private String manufacturer;
 
     /**
-     * 产地
+     * placeOrigin 字段。
      */
     private String placeOrigin;
 
     /**
-     * 生产日期
+     * productionDate 字段。
      */
     private LocalDate productionDate;
 
     /**
-     * 创建时间
+     * createTime 字段。
      */
     private LocalDateTime createTime;
 }

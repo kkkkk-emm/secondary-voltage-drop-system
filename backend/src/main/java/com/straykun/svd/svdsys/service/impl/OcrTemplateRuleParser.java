@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * OCR 模板化规则解析器（规则优先）
+ * OCR 模板规则解析器。
  */
 @Component
 public class OcrTemplateRuleParser {
@@ -33,7 +33,10 @@ public class OcrTemplateRuleParser {
     private static final Pattern NUMBER_PATTERN = Pattern.compile("[-+]?\\d+(?:\\.\\d+)?");
 
     /**
-     * 抽取固定 22 个明细字段，缺失值返回空字符串
+     * 按模板规则从 OCR 文本中提取固定明细字段。
+     *
+     * @param ocrText OCR 拼接文本。
+     * @return 返回明细字段键值对映射。
      */
     public Map<String, String> extractDetailedPairs(String ocrText) {
         Map<String, String> pairs = OcrExtractFieldConstants.newDetailedMap();

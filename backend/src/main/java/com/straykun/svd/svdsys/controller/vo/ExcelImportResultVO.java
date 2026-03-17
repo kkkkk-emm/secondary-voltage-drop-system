@@ -6,54 +6,69 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Excel 导入结果 VO
+ * Excel导入结果响应视图对象。
  */
 @Data
 public class ExcelImportResultVO {
 
     /**
-     * 总行数（不含表头）
+     * totalRows 字段。
      */
     private int totalRows;
 
     /**
-     * 成功导入行数
+     * successRows 字段。
      */
     private int successRows;
 
     /**
-     * 失败行数
+     * failedRows 字段。
      */
     private int failedRows;
 
-    /**
-     * 错误详情列表
-     */
     private List<ErrorDetail> errors = new ArrayList<>();
 
+    /**
+     * Error详情响应视图对象。
+     */
     @Data
     public static class ErrorDetail {
         /**
-         * 行号（Excel 中的行号，从 1 开始，含表头）
+         * rowNum 字段。
          */
         private int rowNum;
 
         /**
-         * 错误信息
+         * 响应消息。
          */
         private String message;
 
+        /**
+         * 构造函数，初始化 ErrorDetail 所需依赖。
+         *
+         * @param rowNum 参数 rowNum。
+         * @param message 参数 message。
+         */
         public ErrorDetail(int rowNum, String message) {
             this.rowNum = rowNum;
             this.message = message;
         }
     }
 
+    /**
+     * 执行 addError 业务逻辑。
+     *
+     * @param rowNum 参数 rowNum。
+     * @param message 参数 message。
+     */
     public void addError(int rowNum, String message) {
         this.errors.add(new ErrorDetail(rowNum, message));
         this.failedRows++;
     }
 
+    /**
+     * 执行 incrementSuccess 业务逻辑。
+     */
     public void incrementSuccess() {
         this.successRows++;
     }

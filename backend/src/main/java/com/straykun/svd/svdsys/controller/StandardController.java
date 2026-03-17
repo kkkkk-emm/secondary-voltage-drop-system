@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 检定标准配置模块
+ * 标准配置控制器。
  */
 @RestController
 @RequestMapping("/standard")
@@ -28,12 +28,19 @@ public class StandardController {
 
     private final StandardService standardService;
 
+    /**
+     * 构造函数，初始化 StandardController 所需依赖。
+     *
+     * @param standardService 参数 standardService。
+     */
     public StandardController(StandardService standardService) {
         this.standardService = standardService;
     }
 
     /**
-     * 获取标准配置列表（包含每一项数据）
+     * 查询 list 相关信息。
+     *
+     * @return 返回统一响应结果。
      */
     @GetMapping("/list")
     public Result<List<StandardVO>> list() {
@@ -41,7 +48,9 @@ public class StandardController {
     }
 
     /**
-     * 获取分组后的标准列表（用于下拉框选择，去重）
+     * 查询 listGroups 相关信息。
+     *
+     * @return 返回统一响应结果。
      */
     @GetMapping("/groups")
     public Result<List<StandardGroupVO>> listGroups() {
@@ -49,7 +58,12 @@ public class StandardController {
     }
 
     /**
-     * 匹配特定标准（用于实时自动校验）- 旧接口保留兼容
+     * 按项目类型、档位与负载匹配单项标准阈值范围。
+     *
+     * @param projectType 项目类型。
+     * @param gearLevel 档位。
+     * @param loadPercent 负载百分比。
+     * @return 返回统一响应结果。
      */
     @GetMapping("/match")
     public Result<Map<String, Object>> match(@RequestParam String projectType,
@@ -66,7 +80,12 @@ public class StandardController {
     }
 
     /**
-     * 获取指定组合下的所有阈值项（用于新的多项校验）
+     * 执行 matchAll 业务逻辑。
+     *
+     * @param projectType 参数 projectType。
+     * @param gearLevel 参数 gearLevel。
+     * @param loadPercent 参数 loadPercent。
+     * @return 返回统一响应结果。
      */
     @GetMapping("/matchAll")
     public Result<StandardGroupVO> matchAll(@RequestParam String projectType,
@@ -77,7 +96,10 @@ public class StandardController {
     }
 
     /**
-     * 修改阈值（仅管理员）
+     * 执行 update 更新处理。
+     *
+     * @param request 参数 request。
+     * @return 返回统一响应结果。
      */
     @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -87,5 +109,3 @@ public class StandardController {
         return Result.success();
     }
 }
-
-

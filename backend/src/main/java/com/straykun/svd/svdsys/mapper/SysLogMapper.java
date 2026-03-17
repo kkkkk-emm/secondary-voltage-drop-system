@@ -7,26 +7,29 @@ import org.apache.ibatis.annotations.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 系统日志数据访问接口，定义持久化操作。
+ */
 @Mapper
 public interface SysLogMapper {
 
     /**
-     * 新增日志
+     * 执行 insert 新增处理。
      *
-     * @param log 日志信息
-     * @return 影响行数
+     * @param log 参数 log。
+     * @return 返回处理结果数量。
      */
     int insert(SysLog log);
 
     /**
-     * 分页查询日志列表
+     * 查询 selectPage 相关信息。
      *
-     * @param offset    偏移量
-     * @param size      每页大小
-     * @param username  用户名
-     * @param startDate 开始时间
-     * @param endDate   结束时间
-     * @return 日志列表
+     * @param offset 参数 offset。
+     * @param size 参数 size。
+     * @param username 参数 username。
+     * @param startDate 参数 startDate。
+     * @param endDate 参数 endDate。
+     * @return 返回结果列表。
      */
     List<SysLog> selectPage(@Param("offset") long offset,
                            @Param("size") long size,
@@ -35,12 +38,12 @@ public interface SysLogMapper {
                            @Param("endDate") LocalDateTime endDate);
 
     /**
-     * 统计日志数量
+     * 查询 count 相关信息。
      *
-     * @param username  用户名
-     * @param startDate 开始时间
-     * @param endDate   结束时间
-     * @return 日志数量
+     * @param username 参数 username。
+     * @param startDate 参数 startDate。
+     * @param endDate 参数 endDate。
+     * @return 返回统计结果。
      */
     long count(@Param("username") String username,
                @Param("startDate") LocalDateTime startDate,

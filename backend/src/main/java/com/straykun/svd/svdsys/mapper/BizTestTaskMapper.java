@@ -7,38 +7,41 @@ import org.apache.ibatis.annotations.Param;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 业务检定检定任务数据访问接口，定义持久化操作。
+ */
 @Mapper
 public interface BizTestTaskMapper {
 
     /**
-     * 新增检测任务
+     * 执行 insert 新增处理。
      *
-     * @param task 检测任务
-     * @return 影响行数
+     * @param task 参数 task。
+     * @return 返回处理结果数量。
      */
     int insert(BizTestTask task);
 
     /**
-     * 根据ID查询检测任务
+     * 查询 selectById 相关信息。
      *
-     * @param id 任务ID
-     * @return 检测任务
+     * @param id 参数 id。
+     * @return 返回处理结果。
      */
     BizTestTask selectById(@Param("id") Long id);
 
     /**
-     * 分页查询任务列表，联表查询设备和操作员基础信息
+     * 查询 selectPage 相关信息。
      *
-     * @param offset          偏移量
-     * @param size            每页大小
-     * @param taskId          任务ID
-     * @param deviceProductNo 设备产品编号
-     * @param operatorName    操作员姓名
-     * @param operatorId      操作员ID
-     * @param startDate       开始日期
-     * @param endDate         结束日期
-     * @param isPass          是否合格
-     * @return 任务记录列表
+     * @param offset 参数 offset。
+     * @param size 参数 size。
+     * @param taskId 参数 taskId。
+     * @param deviceProductNo 参数 deviceProductNo。
+     * @param operatorName 参数 operatorName。
+     * @param operatorId 参数 operatorId。
+     * @param startDate 参数 startDate。
+     * @param endDate 参数 endDate。
+     * @param isPass 参数 isPass。
+     * @return 返回结果列表。
      */
     List<TaskRecord> selectPage(@Param("offset") long offset,
                                 @Param("size") long size,
@@ -51,16 +54,16 @@ public interface BizTestTaskMapper {
                                 @Param("isPass") Integer isPass);
 
     /**
-     * 统计任务数量
+     * 查询 count 相关信息。
      *
-     * @param taskId          任务ID
-     * @param deviceProductNo 设备产品编号
-     * @param operatorName    操作员姓名
-     * @param operatorId      操作员ID
-     * @param startDate       开始日期
-     * @param endDate         结束日期
-     * @param isPass          是否合格
-     * @return 任务数量
+     * @param taskId 参数 taskId。
+     * @param deviceProductNo 参数 deviceProductNo。
+     * @param operatorName 参数 operatorName。
+     * @param operatorId 参数 operatorId。
+     * @param startDate 参数 startDate。
+     * @param endDate 参数 endDate。
+     * @param isPass 参数 isPass。
+     * @return 返回统计结果。
      */
     long count(@Param("taskId") Long taskId,
                @Param("deviceProductNo") String deviceProductNo,
@@ -71,44 +74,17 @@ public interface BizTestTaskMapper {
                @Param("isPass") Integer isPass);
 
     /**
-     * 任务记录DTO
+     * 检定任务Record数据访问组件。
      */
     class TaskRecord {
-        /**
-         * 任务ID
-         */
         public Long id;
-        /**
-         * 设备ID
-         */
         public Long deviceId;
-        /**
-         * 设备产品编号
-         */
         public String deviceProductNo;
-        /**
-         * 设备产品名称
-         */
         public String deviceProductName;
-        /**
-         * 操作员ID
-         */
         public Long operatorId;
-        /**
-         * 操作员姓名
-         */
         public String operatorName;
-        /**
-         * 计量点编号
-         */
         public String meterPointId;
-        /**
-         * 检测时间
-         */
         public java.time.LocalDateTime testDate;
-        /**
-         * 结果 1:合格 0:不合格
-         */
         public Integer result; // 1:合格 0:不合格
     }
 }
