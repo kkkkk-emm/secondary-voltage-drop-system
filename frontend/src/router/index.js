@@ -42,64 +42,69 @@ const router = createRouter({
           path: 'device',
           name: 'Device',
           component: DevicePage,
-          meta: { title: '被检设备管理', roles: [1] },
+          meta: { title: '设备信息管理', roles: [1] },
         },
         {
           path: 'admin/standard',
           name: 'AdminStandard',
           component: StandardConfigPage,
-          meta: { title: '标准阈值配置', roles: [0] },
+          meta: { title: '检定标准管理', roles: [0] },
         },
         {
           path: 'admin/users',
           name: 'AdminUsers',
           component: UserManagePage,
-          meta: { title: '用户账号管理', roles: [0] },
+          meta: { title: '用户管理', roles: [0] },
         },
         {
           path: 'admin/logs',
           name: 'AdminLogs',
           component: LogAuditPage,
-          meta: { title: '日志审计', roles: [0] },
+          meta: { title: '系统日志审计', roles: [0] },
         },
         {
           path: 'admin/correct',
           name: 'AdminCorrect',
           component: DataCorrectPage,
-          meta: { title: '数据修正', roles: [0] },
+          meta: { title: '检定结果修正', roles: [0] },
         },
         {
           path: 'admin/dashboard',
           name: 'AdminDashboard',
           component: DashboardPage,
-          meta: { title: '数据可视化', roles: [0] },
+          meta: { title: '统计分析看板', roles: [0] },
         },
         {
           path: 'task/create',
           name: 'TaskCreate',
           component: TaskCreatePage,
-          meta: { title: '新建检定任务', roles: [1] },
+          meta: { title: '新建实验任务', roles: [1] },
         },
         {
           path: 'task/list',
           name: 'TaskList',
           component: TaskListPage,
-          meta: { title: '检定任务列表', roles: [1] },
+          meta: { title: '实验任务列表', roles: [0, 1] },
+        },
+        {
+          path: 'task/edit/:id',
+          name: 'TaskEdit',
+          component: TaskCreatePage,
+          meta: { title: '编辑实验任务', roles: [0, 1] },
         },
         {
           path: 'task/detail/:id',
           name: 'TaskDetail',
           component: TaskDetailPage,
-          meta: { title: '检定任务详情', roles: [0, 1] },
+          meta: { title: '实验任务详情', roles: [0, 1] },
         },
         {
           path: 'task/import',
           name: 'TaskImport',
           component: ImportPage,
-          meta: { title: 'Excel数据导入', roles: [1] },
+          meta: { title: 'Excel 导入', roles: [1] },
         },
         {
-          // 兼容旧入口：图片OCR提取页已下线，统一跳转到新建任务中的OCR回填
           path: 'task/ocr',
           redirect: '/task/create',
           meta: { roles: [1] },
@@ -113,7 +118,7 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const token = getToken()
   const userInfo = getUserInfo()
 

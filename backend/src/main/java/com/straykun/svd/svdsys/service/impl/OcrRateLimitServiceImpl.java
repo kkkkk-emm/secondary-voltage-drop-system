@@ -73,7 +73,7 @@ public class OcrRateLimitServiceImpl implements OcrRateLimitService {
             Long current = stringRedisTemplate.execute(
                     counterScript,
                     Collections.singletonList(key),
-                    String.valueOf(safeWindowSeconds)
+                    String.valueOf(safeWindowSeconds) // ARGV[1]：窗口期秒数
             );
 
             if (current == null) {

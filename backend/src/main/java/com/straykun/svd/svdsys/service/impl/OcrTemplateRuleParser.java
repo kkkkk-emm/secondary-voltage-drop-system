@@ -44,15 +44,17 @@ public class OcrTemplateRuleParser {
             return pairs;
         }
 
+        // 提取固定单值字段
         String text = ocrText.replace("\r\n", "\n");
-        fillByRegex(pairs, OcrExtractFieldConstants.PRIMARY_VOLTAGE, VOLTAGE_PATTERN, text);
-        fillByRegex(pairs, OcrExtractFieldConstants.TAN_PHI, TAN_PATTERN, text);
-        fillByRegex(pairs, OcrExtractFieldConstants.METER_POINT_ID, METER_POINT_PATTERN, text);
-        fillByRegex(pairs, OcrExtractFieldConstants.TEST_DATE, TEST_DATE_PATTERN, text);
-        fillByRegex(pairs, OcrExtractFieldConstants.TEMPERATURE, TEMPERATURE_PATTERN, text);
-        fillByRegex(pairs, OcrExtractFieldConstants.HUMIDITY, HUMIDITY_PATTERN, text);
-        fillByRegex(pairs, OcrExtractFieldConstants.R_PERCENT, R_PERCENT_PATTERN, text);
+        fillByRegex(pairs, OcrExtractFieldConstants.PRIMARY_VOLTAGE, VOLTAGE_PATTERN, text); // 电压
+        fillByRegex(pairs, OcrExtractFieldConstants.TAN_PHI, TAN_PATTERN, text); // tanφ
+        fillByRegex(pairs, OcrExtractFieldConstants.METER_POINT_ID, METER_POINT_PATTERN, text); // 计量点编号
+        fillByRegex(pairs, OcrExtractFieldConstants.TEST_DATE, TEST_DATE_PATTERN, text); // 日期
+        fillByRegex(pairs, OcrExtractFieldConstants.TEMPERATURE, TEMPERATURE_PATTERN, text); // 温度
+        fillByRegex(pairs, OcrExtractFieldConstants.HUMIDITY, HUMIDITY_PATTERN, text); // 湿度
+        fillByRegex(pairs, OcrExtractFieldConstants.R_PERCENT, R_PERCENT_PATTERN, text); // r%
 
+        // 按行标签提取 AO/BO/CO（三值）
         List<String> lines = splitLines(text);
         fillPhaseRow(pairs, lines, RowLabel.F,
                 OcrExtractFieldConstants.AO_F, OcrExtractFieldConstants.BO_F, OcrExtractFieldConstants.CO_F);

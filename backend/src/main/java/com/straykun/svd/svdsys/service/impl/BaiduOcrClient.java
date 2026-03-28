@@ -67,14 +67,15 @@ public class BaiduOcrClient {
      * @return 返回处理结果。
      */
     public JsonNode recognize(MultipartFile file) {
-        String token = getAccessToken();
+        String token = getAccessToken(); // 获取百度OCR的Access Token
         String imageBase64;
         try {
-            imageBase64 = Base64.getEncoder().encodeToString(file.getBytes());
+            imageBase64 = Base64.getEncoder().encodeToString(file.getBytes()); // 对图片进行转换
         } catch (IOException e) {
             throw new IllegalStateException("读取上传图片失败", e);
         }
 
+        // 组装http请求，调用百度OCR接口
         String formBody = "image=" + urlEncode(imageBase64);
         String requestUrl = endpoint + "?access_token=" + urlEncode(token);
         HttpRequest request = HttpRequest.newBuilder(URI.create(requestUrl))
@@ -84,11 +85,13 @@ public class BaiduOcrClient {
                 .build();
 
         try {
+            // 发送请求并处理响应
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() != 200) {
                 throw new IllegalStateException("百度OCR调用失败，HTTP状态码: " + response.statusCode());
             }
 
+            // 解析 JSON 响应，检查是否有错误码
             JsonNode root = objectMapper.readTree(response.body());
             if (root.hasNonNull("error_code") && root.path("error_code").asInt() != 0) {
                 String errorMsg = root.path("error_msg").asText("未知错误");

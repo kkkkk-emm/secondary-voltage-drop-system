@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessageBox, ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserInfo, clearAuth } from '@/utils/auth'
 import { logoutApi } from '@/api/auth'
 import { changePasswordApi } from '@/api/user'
@@ -24,18 +24,15 @@ import {
 const route = useRoute()
 const router = useRouter()
 
-// 当前登录用户信息
 const userInfo = ref(getUserInfo())
-const isAdmin = computed(() => userInfo.value && userInfo.value.role === 0)
-const isUser = computed(() => userInfo.value && userInfo.value.role === 1)
+const isAdmin = computed(() => userInfo.value?.role === 0)
+const isUser = computed(() => userInfo.value?.role === 1)
 
-// 当前时间
 const currentTime = ref('')
 let timeTimer = null
 
 const updateTime = () => {
-  const now = new Date()
-  currentTime.value = now.toLocaleString('zh-CN', {
+  currentTime.value = new Date().toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -55,10 +52,10 @@ onUnmounted(() => {
   if (timeTimer) clearInterval(timeTimer)
 })
 
-// 根据路由高亮菜单
 const activeMenu = computed(() => {
   if (route.path.startsWith('/device')) return '/device'
   if (route.path.startsWith('/task/create')) return '/task/create'
+  if (route.path.startsWith('/task/edit')) return '/task/list'
   if (route.path.startsWith('/task/list')) return '/task/list'
   if (route.path.startsWith('/task/import')) return '/task/import'
   if (route.path.startsWith('/admin/dashboard')) return '/admin/dashboard'
@@ -66,16 +63,12 @@ const activeMenu = computed(() => {
   return route.path
 })
 
-// 退出登录
 const handleLogout = () => {
-  ElMessageBox.confirm('确认退出当前登录吗？', '提示', {
-    type: 'warning',
-  })
+  ElMessageBox.confirm('确认退出当前账号吗？', '提示', { type: 'warning' })
     .then(async () => {
       try {
         await logoutApi()
       } catch (e) {
-        // 忽略接口错误，前端仍然清理状态
         console.warn('logout error:', e)
       }
       clearAuth()
@@ -85,7 +78,6 @@ const handleLogout = () => {
     .catch(() => {})
 }
 
-// 修改密码弹窗
 const pwdDialogVisible = ref(false)
 const pwdFormRef = ref()
 const pwdForm = ref({
@@ -93,8 +85,9 @@ const pwdForm = ref({
   newPassword: '',
   confirmPassword: '',
 })
+
 const pwdRules = {
-  oldPassword: [{ required: true, message: '请输入原密码', trigger: 'blur' }],
+  oldPassword: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
   newPassword: [{ required: true, message: '请输入新密码', trigger: 'blur' }],
   confirmPassword: [
     { required: true, message: '请再次输入新密码', trigger: 'blur' },
@@ -128,9 +121,8 @@ const handleChangePwd = () => {
         oldPassword: pwdForm.value.oldPassword,
         newPassword: pwdForm.value.newPassword,
       })
-      ElMessage.success('密码修改成功，请使用新密码重新登录')
+      ElMessage.success('密码修改成功，请重新登录')
       pwdDialogVisible.value = false
-      // 修改密码后强制重新登录
       clearAuth()
       router.replace('/login')
     } catch (e) {
@@ -142,16 +134,16 @@ const handleChangePwd = () => {
 
 <template>
   <el-container class="layout-root">
-    <!-- 侧边菜单 -->
     <el-aside width="240px" class="layout-aside">
       <div class="logo">
         <div class="logo-icon">
           <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
         </div>
-        <span class="logo-text">互感器检定系统</span>
+        <span class="logo-text">检定管理系统</span>
       </div>
+
       <el-menu
         :default-active="activeMenu"
         router
@@ -161,24 +153,14 @@ const handleChangePwd = () => {
         text-color="rgba(255, 255, 255, 0.65)"
         active-text-color="#fff"
       >
-        <!-- 检测员专属菜单：角色为1时显示 -->
         <el-menu-item v-if="isUser" index="/device">
           <el-icon><Folder /></el-icon>
-          <span>被检设备管理</span>
+          <span>设备信息管理</span>
         </el-menu-item>
         <el-menu-item v-if="isUser" index="/task/create">
           <el-icon><Plus /></el-icon>
-          <span>新建检定任务</span>
+          <span>新建实验任务</span>
         </el-menu-item>
-        <el-menu-item v-if="isUser" index="/task/list">
-          <el-icon><List /></el-icon>
-          <span>检定任务列表</span>
-        </el-menu-item>
-        <el-menu-item v-if="isUser" index="/task/import">
-          <el-icon><Upload /></el-icon>
-          <span>Excel数据导入</span>
-        </el-menu-item>
-        <!-- 管理员专属菜单：角色为0时显示 -->
         <el-sub-menu v-if="isAdmin" index="admin">
           <template #title>
             <el-icon><Setting /></el-icon>
@@ -186,34 +168,42 @@ const handleChangePwd = () => {
           </template>
           <el-menu-item index="/admin/users">
             <el-icon><User /></el-icon>
-            用户账号管理
+            用户管理
           </el-menu-item>
           <el-menu-item index="/admin/standard">
             <el-icon><DataLine /></el-icon>
-            标准阈值配置
+            检定标准管理
           </el-menu-item>
           <el-menu-item index="/admin/logs">
             <el-icon><Document /></el-icon>
-            日志审计
+            系统日志审计
           </el-menu-item>
           <el-menu-item index="/admin/correct">
             <el-icon><Edit /></el-icon>
-            数据修正
+            检定结果修正
           </el-menu-item>
         </el-sub-menu>
-        <!-- 数据可视化：与系统管理平行 -->
+
+        <el-menu-item v-if="isUser || isAdmin" index="/task/list">
+          <el-icon><List /></el-icon>
+          <span>实验任务列表</span>
+        </el-menu-item>
+        <el-menu-item v-if="isUser" index="/task/import">
+          <el-icon><Upload /></el-icon>
+          <span>Excel 导入</span>
+        </el-menu-item>
+
         <el-menu-item v-if="isAdmin" index="/admin/dashboard">
           <el-icon><TrendCharts /></el-icon>
-          <span>数据可视化</span>
+          <span>统计分析看板</span>
         </el-menu-item>
       </el-menu>
-      <!-- 侧边栏底部版权 -->
+
       <div class="aside-footer">
-        <span>© 2025 检测管理平台</span>
+        <span>2025 检测管理平台</span>
       </div>
     </el-aside>
 
-    <!-- 右侧主体 -->
     <el-container class="main-container">
       <el-header class="layout-header">
         <div class="header-left">
@@ -222,27 +212,28 @@ const handleChangePwd = () => {
             <el-breadcrumb-item>{{ route.meta.title || '首页' }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
+
         <div class="header-right">
           <div class="header-actions">
             <el-tooltip content="当前时间" placement="bottom">
               <span class="current-time">{{ currentTime }}</span>
             </el-tooltip>
           </div>
+
           <el-dropdown trigger="click">
             <div class="user-dropdown">
               <el-avatar :size="32" class="user-avatar">
-                {{ (userInfo?.realName || userInfo?.username || 'U').charAt(0).toUpperCase() }}
+                {{ (userInfo?.realName || userInfo?.username || '未').charAt(0).toUpperCase() }}
               </el-avatar>
-              <span class="user-name">
-                {{ userInfo?.realName || userInfo?.username || '未登录' }}
-              </span>
+              <span class="user-name">{{ userInfo?.realName || userInfo?.username || '未知用户' }}</span>
               <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
             </div>
+
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item disabled>
                   <el-icon><User /></el-icon>
-                  角色：{{ userInfo?.role === 0 ? '管理员' : '检测员' }}
+                  角色：{{ userInfo?.role === 0 ? '管理员' : '检定员' }}
                 </el-dropdown-item>
                 <el-dropdown-item divided @click="handleOpenChangePwd">
                   <el-icon><Key /></el-icon>
@@ -268,7 +259,6 @@ const handleChangePwd = () => {
         </div>
       </el-main>
 
-      <!-- 修改密码弹窗 -->
       <el-dialog
         v-model="pwdDialogVisible"
         title="修改密码"
@@ -277,20 +267,20 @@ const handleChangePwd = () => {
         :close-on-click-modal="false"
       >
         <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="100px">
-          <el-form-item label="原密码" prop="oldPassword">
-            <el-input v-model="pwdForm.oldPassword" type="password" show-password placeholder="请输入原密码" />
+          <el-form-item label="旧密码" prop="oldPassword">
+            <el-input v-model="pwdForm.oldPassword" type="password" show-password placeholder="请输入旧密码" />
           </el-form-item>
           <el-form-item label="新密码" prop="newPassword">
             <el-input v-model="pwdForm.newPassword" type="password" show-password placeholder="请输入新密码" />
           </el-form-item>
-          <el-form-item label="确认新密码" prop="confirmPassword">
+          <el-form-item label="确认密码" prop="confirmPassword">
             <el-input v-model="pwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
           </el-form-item>
         </el-form>
         <template #footer>
           <span class="dialog-footer">
-            <el-button @click="pwdDialogVisible = false">取 消</el-button>
-            <el-button type="primary" @click="handleChangePwd">确 定</el-button>
+            <el-button @click="pwdDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="handleChangePwd">确认</el-button>
           </span>
         </template>
       </el-dialog>
@@ -345,16 +335,6 @@ const handleChangePwd = () => {
   padding: 8px 0;
 }
 
-.menu::-webkit-scrollbar {
-  width: 4px;
-}
-
-.menu::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-}
-
-/* 菜单项样式优化 */
 :deep(.el-menu-item),
 :deep(.el-sub-menu__title) {
   height: 48px;
@@ -478,7 +458,6 @@ const handleChangePwd = () => {
   min-height: calc(100vh - 64px);
 }
 
-/* 页面切换动画 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
@@ -489,7 +468,6 @@ const handleChangePwd = () => {
   opacity: 0;
 }
 
-/* 全局卡片样式优化 */
 :deep(.el-card) {
   border-radius: 8px;
   border: none;
@@ -499,26 +477,4 @@ const handleChangePwd = () => {
 :deep(.el-card__body) {
   padding: 20px;
 }
-
-/* 弹窗样式优化 */
-:deep(.el-dialog) {
-  border-radius: 12px;
-}
-
-:deep(.el-dialog__header) {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid #f0f0f0;
-  margin-right: 0;
-}
-
-:deep(.el-dialog__body) {
-  padding: 24px;
-}
-
-:deep(.el-dialog__footer) {
-  padding: 16px 24px 20px;
-  border-top: 1px solid #f0f0f0;
-}
 </style>
-
-

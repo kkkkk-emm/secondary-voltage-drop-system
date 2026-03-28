@@ -51,4 +51,9 @@ public interface BizTestResultMapper {
      * @return 返回处理结果数量。
      */
     int updateById(BizTestResult result);
+
+    /**
+     * 鎵ц deleteByTaskId 鍒犻櫎澶勭悊銆?     *
+     * @param taskId 鍙傛暟 taskId銆?     * @return 杩斿洖澶勭悊缁撴灉鏁伴噺銆?     */
+    int deleteByTaskId(@Param("taskId") Long taskId);
 }

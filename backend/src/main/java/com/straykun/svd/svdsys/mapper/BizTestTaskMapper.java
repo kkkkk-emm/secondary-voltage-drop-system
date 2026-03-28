@@ -22,6 +22,16 @@ public interface BizTestTaskMapper {
     int insert(BizTestTask task);
 
     /**
+     * 鎵ц updateById 鏇存柊澶勭悊銆?     *
+     * @param task 鍙傛暟 task銆?     * @return 杩斿洖澶勭悊缁撴灉鏁伴噺銆?     */
+    int updateById(BizTestTask task);
+
+    /**
+     * 鎵ц deleteById 鍒犻櫎澶勭悊銆?     *
+     * @param id 鍙傛暟 id銆?     * @return 杩斿洖澶勭悊缁撴灉鏁伴噺銆?     */
+    int deleteById(@Param("id") Long id);
+
+    /**
      * 查询 selectById 相关信息。
      *
      * @param id 参数 id。

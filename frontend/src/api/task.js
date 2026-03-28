@@ -10,6 +10,23 @@ export function submitTask(data) {
   })
 }
 
+// 更新检定任务：PUT /task/{id}
+export function updateTask(id, data) {
+  return request({
+    url: `/task/${id}`,
+    method: 'put',
+    data,
+  })
+}
+
+// 删除检定任务：DELETE /task/{id}
+export function deleteTask(id) {
+  return request({
+    url: `/task/${id}`,
+    method: 'delete',
+  })
+}
+
 // 分页查询检定记录：GET /task/page
 export function fetchTaskPage(params) {
   return request({

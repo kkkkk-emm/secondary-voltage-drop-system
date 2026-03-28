@@ -121,6 +121,18 @@ public class TaskDetailVO {
          * 是否合格标记。
          */
         private Integer isPass;
+
+        /**
+         * projectType 瀛楁銆?         */
+        private String projectType;
+
+        /**
+         * gearLevel 瀛楁銆?         */
+        private String gearLevel;
+
+        /**
+         * loadPercent 瀛楁銆?         */
+        private String loadPercent;
     }
 
     /**

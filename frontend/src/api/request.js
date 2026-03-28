@@ -17,6 +17,12 @@ const redirectToLogin = () => {
   router.replace({ path: '/login', query: { redirect } })
 }
 
+const handleUnauthorized = (message = '登录已失效，请重新登录') => {
+  clearAuth()
+  ElMessage.error(message)
+  redirectToLogin()
+}
+
 service.interceptors.request.use(
   (config) => {
     const token = getToken()
@@ -37,9 +43,17 @@ service.interceptors.response.use(
           reader.onload = () => {
             try {
               const errorData = JSON.parse(reader.result)
-              ElMessage.error(errorData.message || '请求失败')
-              reject(new Error(errorData.message || '请求失败'))
-            } catch (e) {
+              const code = errorData?.code
+              const message = errorData?.message || '请求失败'
+              if (code === 401) {
+                handleUnauthorized(message)
+              } else if (code === 403) {
+                ElMessage.error(message || '无访问权限')
+              } else {
+                ElMessage.error(message)
+              }
+              reject(new Error(message))
+            } catch (_e) {
               reject(new Error('请求失败'))
             }
           }
@@ -51,25 +65,32 @@ service.interceptors.response.use(
 
     const res = response.data
     if (res.code && res.code !== 200) {
-      ElMessage.error(res.message || '请求失败')
-      if (res.code === 401 || res.code === 403) {
-        clearAuth()
-        redirectToLogin()
+      const message = res.message || '请求失败'
+      if (res.code === 401) {
+        handleUnauthorized(message)
+      } else if (res.code === 403) {
+        ElMessage.error(message || '无访问权限')
+      } else {
+        ElMessage.error(message)
       }
-      return Promise.reject(new Error(res.message || 'Error'))
+      return Promise.reject(new Error(message))
     }
     return res.data
   },
   (error) => {
     const status = error?.response?.status
-    if (status === 401 || status === 403) {
-      clearAuth()
-      ElMessage.error('登录已失效，请重新登录')
-      redirectToLogin()
+    if (status === 401) {
+      handleUnauthorized()
       return Promise.reject(error)
     }
+    if (status === 403) {
+      const message = error?.response?.data?.message || '无访问权限'
+      ElMessage.error(message)
+      return Promise.reject(error)
+    }
+
     console.error('请求异常:', error)
-    ElMessage.error(error.message || '网络异常，请稍后重试')
+    ElMessage.error(error.message || '网络错误，请稍后重试')
     return Promise.reject(error)
   },
 )

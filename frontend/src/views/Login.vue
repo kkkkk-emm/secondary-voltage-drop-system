@@ -9,13 +9,11 @@ import { User, Lock } from '@element-plus/icons-vue'
 const router = useRouter()
 const route = useRoute()
 
-// 登录表单数据
 const form = reactive({
   username: '',
   password: '',
 })
 
-// 表单校验规则
 const rules = {
   username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
@@ -24,13 +22,11 @@ const rules = {
 const formRef = ref()
 const loading = ref(false)
 
-// 提交登录
 const handleSubmit = () => {
   formRef.value.validate(async (valid) => {
     if (!valid) return
     loading.value = true
     try {
-      // 按接口文档：data 中包含 token 和 userInfo
       const data = await loginApi({
         username: form.username,
         password: form.password,
@@ -40,15 +36,14 @@ const handleSubmit = () => {
       ElMessage.success('登录成功')
       const redirect = route.query.redirect
       router.replace(typeof redirect === 'string' && redirect ? redirect : '/')
-    } catch (e) {
-      // 失败信息在拦截器中已提示，这里不用重复提示
+    } catch (_e) {
+      // 错误消息已在请求拦截器统一提示
     } finally {
       loading.value = false
     }
   })
 }
 
-// 回车提交
 const handleKeyup = (e) => {
   if (e.key === 'Enter') {
     handleSubmit()
@@ -58,7 +53,6 @@ const handleKeyup = (e) => {
 
 <template>
   <div class="login-page">
-    <!-- 背景装饰 -->
     <div class="bg-decoration">
       <div class="circle circle-1"></div>
       <div class="circle circle-2"></div>
@@ -66,12 +60,11 @@ const handleKeyup = (e) => {
     </div>
 
     <div class="login-container">
-      <!-- 左侧宣传区 -->
       <div class="login-banner">
         <div class="banner-content">
           <div class="banner-icon">
             <svg viewBox="0 0 24 24" fill="currentColor" width="80" height="80">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           </div>
           <h1 class="banner-title">互感器二次压降检测仪</h1>
@@ -94,20 +87,13 @@ const handleKeyup = (e) => {
         </div>
       </div>
 
-      <!-- 右侧登录表单 -->
       <div class="login-form-wrapper">
         <div class="login-card">
           <div class="login-header">
             <h2 class="login-title">欢迎登录</h2>
             <p class="login-hint">请输入您的账号密码</p>
           </div>
-          <el-form
-            ref="formRef"
-            :model="form"
-            :rules="rules"
-            size="large"
-            @keyup="handleKeyup"
-          >
+          <el-form ref="formRef" :model="form" :rules="rules" size="large" @keyup="handleKeyup">
             <el-form-item prop="username">
               <el-input
                 v-model="form.username"
@@ -127,13 +113,8 @@ const handleKeyup = (e) => {
               />
             </el-form-item>
             <el-form-item>
-              <el-button
-                type="primary"
-                :loading="loading"
-                class="login-btn"
-                @click="handleSubmit"
-              >
-                {{ loading ? '登录中...' : '登 录' }}
+              <el-button type="primary" :loading="loading" class="login-btn" @click="handleSubmit">
+                {{ loading ? '登录中...' : '登录' }}
               </el-button>
             </el-form-item>
           </el-form>
@@ -157,7 +138,6 @@ const handleKeyup = (e) => {
   overflow: hidden;
 }
 
-/* 背景装饰 */
 .bg-decoration {
   position: absolute;
   width: 100%;
@@ -197,8 +177,13 @@ const handleKeyup = (e) => {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
 }
 
 .login-container {
@@ -212,7 +197,6 @@ const handleKeyup = (e) => {
   z-index: 1;
 }
 
-/* 左侧宣传区 */
 .login-banner {
   flex: 1;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -262,50 +246,48 @@ const handleKeyup = (e) => {
 }
 
 .banner-desc {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  opacity: 0.8;
   margin-bottom: 32px;
-  letter-spacing: 4px;
 }
 
 .banner-features {
   text-align: left;
-  display: inline-block;
+  max-width: 280px;
+  margin: 0 auto;
 }
 
 .feature-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 10px;
+  margin-bottom: 14px;
+  font-size: 15px;
 }
 
 .feature-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(102, 126, 234, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
 }
 
-/* 右侧登录表单 */
 .login-form-wrapper {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 48px;
-  background: #fff;
+  background: #f8f9fa;
 }
 
 .login-card {
   width: 100%;
-  max-width: 320px;
+  max-width: 360px;
 }
 
 .login-header {
@@ -314,84 +296,68 @@ const handleKeyup = (e) => {
 }
 
 .login-title {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 34px;
+  font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 8px;
 }
 
 .login-hint {
-  font-size: 14px;
-  color: #999;
-}
-
-:deep(.el-input__wrapper) {
-  border-radius: 8px;
-  padding: 4px 12px;
-  box-shadow: 0 0 0 1px #dcdfe6 inset;
-  transition: all 0.3s;
-}
-
-:deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #667eea inset;
-}
-
-:deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2), 0 0 0 1px #667eea inset;
+  color: #7f8c9a;
+  font-size: 16px;
 }
 
 .login-btn {
   width: 100%;
-  height: 48px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  height: 44px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
   border: none;
-  transition: all 0.3s;
+  box-shadow: 0 8px 20px rgba(118, 75, 162, 0.25);
 }
 
 .login-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  filter: brightness(1.05);
 }
 
 .login-footer {
   text-align: center;
-  margin-top: 32px;
+  margin-top: 20px;
+  color: #9aa0a6;
   font-size: 12px;
-  color: #ccc;
 }
 
-/* 响应式 */
-@media (max-width: 768px) {
+:deep(.el-input__wrapper) {
+  border-radius: 10px;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 22px;
+}
+
+@media (max-width: 960px) {
   .login-container {
+    width: 94%;
+    min-height: 0;
     flex-direction: column;
-    width: 90%;
-    max-width: 400px;
-    min-height: auto;
   }
 
   .login-banner {
-    padding: 32px;
+    padding: 28px;
   }
 
   .banner-title {
-    font-size: 18px;
+    font-size: 20px;
   }
 
   .banner-subtitle {
-    font-size: 22px;
-  }
-
-  .banner-features {
-    display: none;
+    font-size: 24px;
   }
 
   .login-form-wrapper {
-    padding: 32px;
+    padding: 28px 20px;
   }
 }
 </style>
-
-

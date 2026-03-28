@@ -20,6 +20,21 @@ public interface TaskService {
     void submit(TaskCreateDTO dto);
 
     /**
+     * Update an existing task.
+     *
+     * @param taskId task id
+     * @param dto update payload
+     */
+    void update(Long taskId, TaskCreateDTO dto);
+
+    /**
+     * Delete a task.
+     *
+     * @param taskId task id
+     */
+    void delete(Long taskId);
+
+    /**
      * 查询 page 相关信息。
      *
      * @param query 参数 query。

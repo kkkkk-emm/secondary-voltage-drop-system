@@ -36,6 +36,25 @@
                 #{humidity}, #{tanPhi}, #{rPercent})
     </insert>
 
+    <update id="updateById" parameterType="com.straykun.svd.svdsys.domain.BizTestTask">
+        update biz_test_task
+        set device_id = #{deviceId},
+            meter_point_id = #{meterPointId},
+            deliver_date = #{deliverDate},
+            test_date = #{testDate},
+            temperature = #{temperature},
+            humidity = #{humidity},
+            tan_phi = #{tanPhi},
+            r_percent = #{rPercent}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete
+        from biz_test_task
+        where id = #{id}
+    </delete>
+
     <select id="selectById" resultMap="BizTestTaskResultMap">
         select id,
                device_id,

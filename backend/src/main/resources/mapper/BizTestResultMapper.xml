@@ -72,6 +72,12 @@
         where id = #{id}
     </update>
 
+    <delete id="deleteByTaskId">
+        delete
+        from biz_test_result
+        where task_id = #{taskId}
+    </delete>
+
 </mapper>
 
 

@@ -1,11 +1,12 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { fetchTaskDetail } from '@/api/task'
 import { previewReport } from '@/api/report'
 
 const route = useRoute()
+const router = useRouter()
 const loading = ref(false)
 const detail = ref(null)
 
@@ -33,6 +34,10 @@ const handlePreview = async () => {
   }
 }
 
+const handleBack = () => {
+  router.push('/task/list')
+}
+
 onMounted(() => {
   loadDetail()
 })
@@ -43,7 +48,10 @@ onMounted(() => {
     <el-card v-loading="loading">
       <div class="header">
         <div class="title">检定任务详情</div>
-        <el-button type="primary" @click="handlePreview">PDF 预览 / 打印</el-button>
+        <div class="header-actions">
+          <el-button @click="handleBack">返回任务列表</el-button>
+          <el-button type="primary" @click="handlePreview">PDF 预览 / 打印</el-button>
+        </div>
       </div>
 
       <el-descriptions title="任务信息" :column="2" border>
@@ -96,6 +104,10 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
 }
 .title {
   font-size: 16px;

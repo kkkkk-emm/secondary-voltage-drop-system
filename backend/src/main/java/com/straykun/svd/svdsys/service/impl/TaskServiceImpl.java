@@ -19,6 +19,7 @@ import com.straykun.svd.svdsys.mapper.SysTestStandardMapper;
 import com.straykun.svd.svdsys.mapper.SysUserMapper;
 import com.straykun.svd.svdsys.security.SecurityUtils;
 import com.straykun.svd.svdsys.service.TaskService;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -32,14 +33,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 检定任务服务实现类。
+ * Task service implementation.
  */
 @Service
 public class TaskServiceImpl implements TaskService {
 
-    // ==========================================
-    // 1. 静态常量 & 成员变量
-    // ==========================================
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -49,18 +47,6 @@ public class TaskServiceImpl implements TaskService {
     private final SysTestStandardMapper standardMapper;
     private final SysUserMapper userMapper;
 
-    // ==========================================
-    // 2. 构造函数
-    // ==========================================
-    /**
-     * 构造函数，初始化 TaskServiceImpl 所需依赖。
-     *
-     * @param deviceMapper 参数 deviceMapper。
-     * @param taskMapper 参数 taskMapper。
-     * @param resultMapper 参数 resultMapper。
-     * @param standardMapper 参数 standardMapper。
-     * @param userMapper 参数 userMapper。
-     */
     public TaskServiceImpl(BizDeviceMapper deviceMapper,
                            BizTestTaskMapper taskMapper,
                            BizTestResultMapper resultMapper,
@@ -73,84 +59,49 @@ public class TaskServiceImpl implements TaskService {
         this.userMapper = userMapper;
     }
 
-    // ==========================================
-    // 3. 公有业务方法 (Public API)
-    // ==========================================
-
-    /**
-     * 执行 submit 新增处理。
-     *
-     * @param dto 参数 dto。
-     */
     @Override
     @Transactional
     public void submit(TaskCreateDTO dto) {
-        // include: 选择被检设备 -> 校验设备是否存在
-        BizDevice device = deviceMapper.selectById(dto.getDeviceId());
-        if (device == null) {
-            throw new IllegalArgumentException("设备不存在，无法创建检定任务");
-        }
-
-        String userIdStr = SecurityUtils.getCurrentUserId();
-        if (userIdStr == null) {
-            throw new IllegalStateException("未认证");
-        }
-        Long operatorId = Long.valueOf(userIdStr);
+        Long operatorId = parseCurrentUserId();
+        validateDeviceExists(dto.getDeviceId());
 
         BizTestTask task = new BizTestTask();
-        task.setDeviceId(dto.getDeviceId());
+        fillTaskFromDto(task, dto);
         task.setOperatorId(operatorId);
-        task.setMeterPointId(dto.getMeterPointId());
-        task.setDeliverDate(LocalDate.parse(dto.getDeliverDate(), DATE_FORMAT));
-        task.setTestDate(LocalDateTime.parse(dto.getTestDate(), DATETIME_FORMAT));
-        task.setTemperature(dto.getTemperature());
-        task.setHumidity(dto.getHumidity());
-        task.setTanPhi(dto.getTanPhi());
-        task.setRPercent(dto.getRPercent());
 
         taskMapper.insert(task);
-
-        // 录入实时数据 & 实时自动校验
-        if (CollectionUtils.isEmpty(dto.getResultList())) {
-            throw new IllegalArgumentException("明细结果不能为空");
-        }
-        List<BizTestResult> resultEntities = new ArrayList<>();
-        for (ResultItemDTO item : dto.getResultList()) {
-            // 获取该标准组合下的所有阈值项
-            List<SysTestStandard> thresholdItems = standardMapper.matchAll(
-                    item.getProjectType(),
-                    item.getGearLevel(),
-                    item.getLoadPercent()
-            );
-            if (CollectionUtils.isEmpty(thresholdItems)) {
-                throw new IllegalArgumentException("标准配置不存在: " +
-                        item.getProjectType() + "-" + item.getGearLevel() + "-" + item.getLoadPercent());
-            }
-
-            BizTestResult r = new BizTestResult();
-            r.setTaskId(task.getId());
-            // 存储第一个匹配的标准ID（用于后续关联）
-            r.setStandardId(thresholdItems.get(0).getId());
-            r.setPhase(item.getPhase());
-            r.setValF(item.getValF());
-            r.setValDelta(item.getValDelta());
-            r.setValDu(item.getValDu());
-            r.setValUpt(item.getValUpt());
-            r.setValUyb(item.getValUyb());
-
-            // 实时自动校验（使用多项阈值校验）
-            r.setIsPass(checkPassAllItems(thresholdItems, item) ? 1 : 0);
-            resultEntities.add(r);
-        }
-        resultMapper.insertBatch(resultEntities);
+        replaceTaskResults(task.getId(), dto.getResultList());
     }
 
-    /**
-     * 查询 page 相关信息。
-     *
-     * @param query 参数 query。
-     * @return 返回分页结果。
-     */
+    @Override
+    @Transactional
+    public void update(Long taskId, TaskCreateDTO dto) {
+        BizTestTask task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new IllegalArgumentException("Task does not exist");
+        }
+        ensureTaskWritable(task);
+        validateDeviceExists(dto.getDeviceId());
+
+        fillTaskFromDto(task, dto);
+        taskMapper.updateById(task);
+
+        replaceTaskResults(taskId, dto.getResultList());
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long taskId) {
+        BizTestTask task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new IllegalArgumentException("Task does not exist");
+        }
+        ensureTaskWritable(task);
+
+        resultMapper.deleteByTaskId(taskId);
+        taskMapper.deleteById(taskId);
+    }
+
     @Override
     public PageResult<TaskListItemVO> page(TaskPageQuery query) {
         long current = query.getPage() == null || query.getPage() <= 0 ? 1 : query.getPage();
@@ -158,8 +109,7 @@ public class TaskServiceImpl implements TaskService {
         long offset = (current - 1) * size;
 
         Long operatorId = null;
-        // 非管理员默认只能看自己的记录
-        if (!SecurityUtils.isAdmin()) {
+        if (!isCurrentUserAdmin()) {
             String userIdStr = SecurityUtils.getCurrentUserId();
             if (userIdStr != null) {
                 operatorId = Long.valueOf(userIdStr);
@@ -207,12 +157,6 @@ public class TaskServiceImpl implements TaskService {
         return PageResult.of(total, size, current, list);
     }
 
-    /**
-     * 查询 detail 相关信息。
-     *
-     * @param id 参数 id。
-     * @return 返回处理结果。
-     */
     @Override
     public TaskDetailVO detail(Long id) {
         BizTestTask task = taskMapper.selectById(id);
@@ -258,6 +202,13 @@ public class TaskServiceImpl implements TaskService {
             ri.setValUpt(r.getValUpt());
             ri.setValUyb(r.getValUyb());
             ri.setIsPass(r.getIsPass());
+
+            SysTestStandard standard = standardMapper.selectById(r.getStandardId());
+            if (standard != null) {
+                ri.setProjectType(standard.getProjectType());
+                ri.setGearLevel(standard.getGearLevel());
+                ri.setLoadPercent(standard.getLoadPercent());
+            }
             return ri;
         }).collect(Collectors.toList());
         vo.setResultList(resVoList);
@@ -265,20 +216,14 @@ public class TaskServiceImpl implements TaskService {
         return vo;
     }
 
-    /**
-     * 执行 correctResult 更新处理。
-     *
-     * @param request 参数 request。
-     */
     @Override
     @Transactional
     public void correctResult(ResultCorrectRequest request) {
         BizTestResult result = resultMapper.selectById(request.getResultId());
         if (result == null) {
-            throw new IllegalArgumentException("检测结果不存在");
+            throw new IllegalArgumentException("Result does not exist");
         }
 
-        // 更新数据
         if (request.getValF() != null) {
             result.setValF(request.getValF());
         }
@@ -295,7 +240,6 @@ public class TaskServiceImpl implements TaskService {
             result.setValUyb(request.getValUyb());
         }
 
-        // 重新校验是否合格 - 获取该标准对应的所有阈值项
         SysTestStandard std = standardMapper.selectById(result.getStandardId());
         if (std != null) {
             List<SysTestStandard> thresholdItems = standardMapper.matchAll(
@@ -309,36 +253,113 @@ public class TaskServiceImpl implements TaskService {
         resultMapper.updateById(result);
     }
 
-    // ==========================================
-    // 4. 私有业务拆分方法 (Private Business Methods)
-    // ==========================================
+    private void validateDeviceExists(Long deviceId) {
+        BizDevice device = deviceMapper.selectById(deviceId);
+        if (device == null) {
+            throw new IllegalArgumentException("Device does not exist");
+        }
+    }
+
+    private void fillTaskFromDto(BizTestTask task, TaskCreateDTO dto) {
+        task.setDeviceId(dto.getDeviceId());
+        task.setMeterPointId(dto.getMeterPointId());
+        task.setDeliverDate(LocalDate.parse(dto.getDeliverDate(), DATE_FORMAT));
+        task.setTestDate(LocalDateTime.parse(dto.getTestDate(), DATETIME_FORMAT));
+        task.setTemperature(dto.getTemperature());
+        task.setHumidity(dto.getHumidity());
+        task.setTanPhi(dto.getTanPhi());
+        task.setRPercent(dto.getRPercent());
+    }
+
+    private void ensureTaskWritable(BizTestTask task) {
+        if (isCurrentUserAdmin()) {
+            return;
+        }
+        Long currentUserId = parseCurrentUserId();
+        if (!currentUserId.equals(task.getOperatorId())) {
+            throw new AccessDeniedException("无访问权限");
+        }
+    }
+
+    private boolean isCurrentUserAdmin() {
+        if (SecurityUtils.isAdmin()) {
+            return true;
+        }
+        String userIdStr = SecurityUtils.getCurrentUserId();
+        if (userIdStr == null) {
+            return false;
+        }
+        try {
+            Long userId = Long.valueOf(userIdStr);
+            SysUser currentUser = userMapper.selectById(userId);
+            return currentUser != null && Integer.valueOf(0).equals(currentUser.getRole());
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private Long parseCurrentUserId() {
+        String userIdStr = SecurityUtils.getCurrentUserId();
+        if (userIdStr == null) {
+            throw new IllegalStateException("Unauthenticated");
+        }
+        return Long.valueOf(userIdStr);
+    }
+
+    private void replaceTaskResults(Long taskId, List<ResultItemDTO> resultList) {
+        if (CollectionUtils.isEmpty(resultList)) {
+            throw new IllegalArgumentException("Result list cannot be empty");
+        }
+
+        List<BizTestResult> resultEntities = new ArrayList<>();
+        for (ResultItemDTO item : resultList) {
+            List<SysTestStandard> thresholdItems = standardMapper.matchAll(
+                    item.getProjectType(),
+                    item.getGearLevel(),
+                    item.getLoadPercent()
+            );
+            if (CollectionUtils.isEmpty(thresholdItems)) {
+                throw new IllegalArgumentException("Standard not found: "
+                        + item.getProjectType() + "-" + item.getGearLevel() + "-" + item.getLoadPercent());
+            }
+
+            BizTestResult result = new BizTestResult();
+            result.setTaskId(taskId);
+            result.setStandardId(thresholdItems.get(0).getId());
+            result.setPhase(item.getPhase());
+            result.setValF(item.getValF());
+            result.setValDelta(item.getValDelta());
+            result.setValDu(item.getValDu());
+            result.setValUpt(item.getValUpt());
+            result.setValUyb(item.getValUyb());
+            result.setIsPass(checkPassAllItems(thresholdItems, item) ? 1 : 0);
+            resultEntities.add(result);
+        }
+
+        resultMapper.deleteByTaskId(taskId);
+        resultMapper.insertBatch(resultEntities);
+    }
 
     private boolean checkPassAllItems(List<SysTestStandard> thresholdItems, ResultItemDTO item) {
-        // 1. 防御性判断
         if (CollectionUtils.isEmpty(thresholdItems)) {
             return true;
         }
 
-        // 2. 确定项目类型 (直接取第一个标准里的类型)
         String projectType = thresholdItems.get(0).getProjectType();
         boolean isPT = isPtProject(projectType);
 
-        // 3. 核心循环：遍历标准，去 DTO 里找对应的值
         for (SysTestStandard std : thresholdItems) {
             String itemKey = std.getThresholdItem();
-            if (itemKey == null) continue;
+            if (itemKey == null) {
+                continue;
+            }
 
             String key = itemKey.trim().toLowerCase();
-
-            // 4. 业务规则过滤：非 PT 项目跳过 PT 独有指标
             if (!isPT && isPtExclusiveItem(key)) {
                 continue;
             }
 
-            // 5. 从 DTO 对象中提取值
             BigDecimal actualValue = getValueFromDto(item, key);
-
-            // 6. 数值比对
             if (isValueOutOfRange(actualValue, std.getLimitMin(), std.getLimitMax())) {
                 return false;
             }
@@ -347,31 +368,25 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private boolean checkPassAllItemsByResult(List<SysTestStandard> thresholdItems, BizTestResult result) {
-        // 1. 防御性判断
         if (CollectionUtils.isEmpty(thresholdItems)) {
             return true;
         }
 
-        // 2. 确定项目类型
         String projectType = thresholdItems.get(0).getProjectType();
         boolean isPT = isPtProject(projectType);
 
-        // 3. 核心循环
         for (SysTestStandard std : thresholdItems) {
             String itemKey = std.getThresholdItem();
-            if (itemKey == null) continue;
+            if (itemKey == null) {
+                continue;
+            }
 
             String key = itemKey.trim().toLowerCase();
-
-            // 4. 业务规则过滤
             if (!isPT && isPtExclusiveItem(key)) {
                 continue;
             }
 
-            // 5. 从 Result 对象中提取值
             BigDecimal actualValue = getValueFromBizResult(result, key);
-
-            // 6. 数值比对
             if (isValueOutOfRange(actualValue, std.getLimitMin(), std.getLimitMax())) {
                 return false;
             }
@@ -379,12 +394,10 @@ public class TaskServiceImpl implements TaskService {
         return true;
     }
 
-    // ==========================================
-    // 5. 纯辅助/工具方法 (Private Helpers)
-    // ==========================================
-
     private BigDecimal getValueFromDto(ResultItemDTO item, String key) {
-        if (item == null) return BigDecimal.ZERO;
+        if (item == null) {
+            return BigDecimal.ZERO;
+        }
         BigDecimal target = switch (key) {
             case "f" -> item.getValF();
             case "delta" -> item.getValDelta();
@@ -397,7 +410,9 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private BigDecimal getValueFromBizResult(BizTestResult result, String key) {
-        if (result == null) return BigDecimal.ZERO;
+        if (result == null) {
+            return BigDecimal.ZERO;
+        }
         BigDecimal target = switch (key) {
             case "f" -> result.getValF();
             case "delta" -> result.getValDelta();
@@ -419,9 +434,15 @@ public class TaskServiceImpl implements TaskService {
     }
 
     private boolean isValueOutOfRange(BigDecimal value, BigDecimal min, BigDecimal max) {
-        if (value == null) return false;
-        if (min != null && value.compareTo(min) < 0) return true;
-        if (max != null && value.compareTo(max) > 0) return true;
+        if (value == null) {
+            return false;
+        }
+        if (min != null && value.compareTo(min) < 0) {
+            return true;
+        }
+        if (max != null && value.compareTo(max) > 0) {
+            return true;
+        }
         return false;
     }
 }

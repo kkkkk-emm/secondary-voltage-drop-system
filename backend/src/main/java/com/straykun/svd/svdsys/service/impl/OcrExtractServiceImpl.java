@@ -3,6 +3,8 @@ package com.straykun.svd.svdsys.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.straykun.svd.svdsys.controller.vo.OcrExtractResponseVO;
 import com.straykun.svd.svdsys.service.OcrExtractService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -18,6 +20,7 @@ import java.util.Set;
 @Service
 public class OcrExtractServiceImpl implements OcrExtractService {
 
+    private static final Logger log = LoggerFactory.getLogger(OcrExtractServiceImpl.class);
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png");
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/jpeg", "image/jpg", "image/png");
 
@@ -31,9 +34,9 @@ public class OcrExtractServiceImpl implements OcrExtractService {
     /**
      * 构造函数，初始化 OcrExtractServiceImpl 所需依赖。
      *
-     * @param baiduOcrClient 参数 baiduOcrClient。
+     * @param baiduOcrClient        参数 baiduOcrClient。
      * @param ocrTemplateRuleParser 参数 ocrTemplateRuleParser。
-     * @param llmClient 参数 llmClient。
+     * @param llmClient             参数 llmClient。
      */
     public OcrExtractServiceImpl(BaiduOcrClient baiduOcrClient,
                                  OcrTemplateRuleParser ocrTemplateRuleParser,
@@ -53,14 +56,21 @@ public class OcrExtractServiceImpl implements OcrExtractService {
     public OcrExtractResponseVO extract(MultipartFile file) {
         validateImageFile(file);
 
+        // 百度 OCR 识别并提取文本
         JsonNode rawOcr = baiduOcrClient.recognize(file);
         String ocrText = baiduOcrClient.extractText(rawOcr);
 
+        // 先用给定规则抽取键值对，再用大模型优化
         Map<String, String> ruleDetailedPairs = ocrTemplateRuleParser.extractDetailedPairs(ocrText);
         Map<String, String> finalDetailedPairs = ruleDetailedPairs;
         if (hasBlankDetailedField(ruleDetailedPairs)) {
+            log.info("规则提取存在空字段，触发LLM补全");
+            // 大模型提取键值对
             Map<String, String> llmDetailedPairs = llmClient.extractDetailedPairs(ocrText);
             finalDetailedPairs = mergeDetailedPairs(ruleDetailedPairs, llmDetailedPairs);
+
+        } else {
+            log.info("规则提取结果完整，无需LLM补全");
         }
         Map<String, String> legacyPairs = mapDetailedToLegacyPairs(finalDetailedPairs);
 

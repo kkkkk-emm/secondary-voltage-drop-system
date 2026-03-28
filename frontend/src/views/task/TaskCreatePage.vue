@@ -1,10 +1,14 @@
 <script setup>
-import { onMounted, reactive, ref, computed } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { submitTask } from '@/api/task'
+import { fetchTaskDetail, submitTask, updateTask } from '@/api/task'
 import { fetchStandardGroups, matchAllStandard } from '@/api/standard'
 import { fetchDeviceList } from '@/api/device'
 import { extractOcr } from '@/api/ocr'
+
+const route = useRoute()
+const router = useRouter()
 
 const formRef = ref()
 const loading = ref(false)
@@ -12,16 +16,20 @@ const ocrLoading = ref(false)
 const ocrPreviewVisible = ref(false)
 const pendingOcrData = ref(null)
 
-// 设备下拉列表
 const deviceList = ref([])
 const deviceLoading = ref(false)
-
-// 分组后的标准配置列表（去重后）
 const standardGroups = ref([])
 const standardLoading = ref(false)
 const standardTypeLock = ref('')
 
-// 每行选中的标准组的完整阈值信息
+const isEditMode = computed(() => route.name === 'TaskEdit')
+const editingTaskId = computed(() => {
+  const id = Number(route.params.id)
+  return Number.isFinite(id) && id > 0 ? id : null
+})
+const pageTitle = computed(() => (isEditMode.value ? '编辑实验任务' : '新建实验任务'))
+const submitButtonText = computed(() => (isEditMode.value ? '保存修改' : '提交任务'))
+
 const rowThresholds = reactive({
   ao: null,
   bo: null,
@@ -51,38 +59,28 @@ const rules = {
   testDate: [{ required: true, message: '请选择测试日期', trigger: 'change' }],
   temperature: [{ required: true, message: '请输入环境温度', trigger: 'blur' }],
   humidity: [{ required: true, message: '请输入环境湿度', trigger: 'blur' }],
-  tanPhi: [{ required: true, message: '请输入 tanφ', trigger: 'blur' }],
-  rPercent: [{ required: true, message: '请输入 r%', trigger: 'blur' }],
+  tanPhi: [{ required: true, message: '请输入 tanPhi', trigger: 'blur' }],
+  rPercent: [{ required: true, message: '请输入 rPercent', trigger: 'blur' }],
 }
 
-// 加载设备列表
-const loadDeviceList = async () => {
-  deviceLoading.value = true
-  try {
-    deviceList.value = await fetchDeviceList()
-  } catch (e) {
-    console.error('加载设备列表失败:', e)
-  } finally {
-    deviceLoading.value = false
+const hasValue = (value) => value !== undefined && value !== null && String(value).trim() !== ''
+
+const buildGroupKey = (projectType, gearLevel, loadPercent) => {
+  if (!hasValue(projectType) || !hasValue(gearLevel) || !hasValue(loadPercent)) {
+    return null
   }
+  return `${projectType}-${gearLevel}-${loadPercent}`
 }
 
-// 加载分组后的标准列表
-const loadStandardGroups = async () => {
-  standardLoading.value = true
-  try {
-    standardGroups.value = await fetchStandardGroups()
-  } catch (e) {
-    console.error('加载标准列表失败:', e)
-  } finally {
-    standardLoading.value = false
-  }
-}
-
-// 根据 groupKey 获取标准组
 const getGroupByKey = (groupKey) => {
   if (!groupKey) return null
   return standardGroups.value.find((g) => g.groupKey === groupKey)
+}
+
+const getGroupByParts = (projectType, gearLevel, loadPercent) => {
+  return standardGroups.value.find(
+    (g) => g.projectType === projectType && g.gearLevel === gearLevel && g.loadPercent === loadPercent,
+  )
 }
 
 const normalizeProjectType = (projectType) => String(projectType || '').toUpperCase()
@@ -97,7 +95,28 @@ const isStandardGroupDisabled = (group) => {
   return false
 }
 
-// 当选择标准变化时，加载完整的阈值信息
+const loadDeviceList = async () => {
+  deviceLoading.value = true
+  try {
+    deviceList.value = await fetchDeviceList()
+  } catch (e) {
+    console.error('loadDeviceList failed', e)
+  } finally {
+    deviceLoading.value = false
+  }
+}
+
+const loadStandardGroups = async () => {
+  standardLoading.value = true
+  try {
+    standardGroups.value = await fetchStandardGroups()
+  } catch (e) {
+    console.error('loadStandardGroups failed', e)
+  } finally {
+    standardLoading.value = false
+  }
+}
+
 const onStandardChange = async (row) => {
   const group = getGroupByKey(row.standardGroupKey)
   if (!group) {
@@ -112,25 +131,22 @@ const onStandardChange = async (row) => {
     })
     rowThresholds[row.phase] = detail
   } catch (e) {
-    console.error('加载阈值失败:', e)
+    console.error('onStandardChange failed', e)
     rowThresholds[row.phase] = null
   }
 }
 
-// 判断该行是否是 PT 项目（PT 有5项，CT只有2项）
 const isPTProject = (row) => {
   const thresholds = rowThresholds[row.phase]
   return thresholds?.isPT === true
 }
 
-// 获取某项的阈值范围
 const getThresholdRange = (row, itemKey) => {
   const thresholds = rowThresholds[row.phase]
   if (!thresholds || !thresholds.thresholds) return null
   return thresholds.thresholds[itemKey.toLowerCase()]
 }
 
-// 校验单个数据项是否合格
 const checkItemPass = (row, itemKey, value) => {
   const range = getThresholdRange(row, itemKey)
   if (!range || range.min == null || range.max == null) return null
@@ -141,19 +157,11 @@ const checkItemPass = (row, itemKey, value) => {
   return val >= min && val <= max
 }
 
-// 综合校验整行是否合格（所有数据项都必须在各自阈值范围内）
 const checkRowPass = (row) => {
   const thresholds = rowThresholds[row.phase]
   if (!thresholds || !thresholds.thresholds) return null
 
-  const isPT = thresholds.isPT
-
-  // PT项目需要校验5项：f, delta, du, upt, uyb
-  // CT项目只需校验2项：f, delta
-  const itemsToCheck = isPT
-    ? ['f', 'delta', 'du', 'upt', 'uyb']
-    : ['f', 'delta']
-
+  const itemsToCheck = thresholds.isPT ? ['f', 'delta', 'du', 'upt', 'uyb'] : ['f', 'delta']
   const fieldMap = {
     f: 'valF',
     delta: 'valDelta',
@@ -162,7 +170,7 @@ const checkRowPass = (row) => {
     uyb: 'valUyb',
   }
 
-  let hasValue = false
+  let hasMeasuredValue = false
   let allPass = true
 
   for (const item of itemsToCheck) {
@@ -170,38 +178,28 @@ const checkRowPass = (row) => {
     const value = row[field]
     const range = thresholds.thresholds[item]
 
-    if (!range || range.min == null || range.max == null) {
-      // 没有配置该项阈值，跳过
-      continue
-    }
+    if (!range || range.min == null || range.max == null) continue
+    if (value == null || value === '') continue
 
-    if (value == null || value === '') {
-      // 数据未填写，暂时不判断
-      continue
-    }
-
-    hasValue = true
+    hasMeasuredValue = true
     const val = parseFloat(value)
     const min = parseFloat(range.min)
     const max = parseFloat(range.max)
-
     if (val < min || val > max) {
       allPass = false
     }
   }
 
-  if (!hasValue) return null
+  if (!hasMeasuredValue) return null
   return allPass
 }
 
-// 获取行的样式类名
 const getRowClassName = ({ row }) => {
   const pass = checkRowPass(row)
   if (pass === null) return ''
   return pass ? 'row-pass' : 'row-fail'
 }
 
-// 获取单元格配色样式（根据各项阈值分别判断）
 const getCellStyle = (row, field) => {
   const itemMap = {
     valF: 'f',
@@ -215,22 +213,15 @@ const getCellStyle = (row, field) => {
 
   const pass = checkItemPass(row, itemKey, row[field])
   if (pass === null) return {}
-
-  if (pass) {
-    return { color: '#67C23A', fontWeight: 'bold' }
-  } else {
-    return { color: '#F56C6C', fontWeight: 'bold' }
-  }
+  return pass ? { color: '#67C23A', fontWeight: 'bold' } : { color: '#F56C6C', fontWeight: 'bold' }
 }
 
-// 格式化显示阈值范围
 const formatThresholdRange = (row, itemKey) => {
   const range = getThresholdRange(row, itemKey)
   if (!range || range.min == null || range.max == null) return '-'
   return `[${range.min}, ${range.max}]`
 }
 
-// 获取选中的设备信息
 const selectedDevice = computed(() => {
   if (!form.deviceId) return null
   return deviceList.value.find((d) => d.id === form.deviceId)
@@ -245,7 +236,7 @@ const previewExtractedPairsText = computed(() => {
   const pairs = Object.keys(detailedPairs).length > 0 ? detailedPairs : legacyPairs
   try {
     return JSON.stringify(pairs, null, 2)
-  } catch (e) {
+  } catch {
     return '{}'
   }
 })
@@ -266,8 +257,6 @@ const beforeOcrUpload = (file) => {
 
   return true
 }
-
-const hasValue = (value) => value !== undefined && value !== null && String(value).trim() !== ''
 
 const getDetailedValue = (ocrData, key) => {
   const detailedPairs = ocrData?.detailedPairs || {}
@@ -344,8 +333,8 @@ const hasExistingFormDataForOcrFill = () => {
 
 const detectSideFromOcrText = (ocrText) => {
   const text = String(ocrText || '').replace(/\s+/g, '')
-  if (/PT侧/i.test(text)) return 'PT'
-  if (/CT侧/i.test(text)) return 'CT'
+  if (/PT侧/i.test(text) || /PT/i.test(text)) return 'PT'
+  if (/CT侧/i.test(text) || /CT/i.test(text)) return 'CT'
   return ''
 }
 
@@ -386,13 +375,12 @@ const applyPtLockAndSelectDefault = async () => {
   }
 
   standardTypeLock.value = 'PT'
-
   const pt1Group = standardGroups.value.find((g) => normalizeProjectType(g.projectType) === 'PT1')
   const fallbackPtGroup = standardGroups.value.find((g) => isPtProjectType(g.projectType))
   const targetGroup = pt1Group || fallbackPtGroup
 
   if (!targetGroup) {
-    ElMessage.warning('检测到5项数据，但未找到PT标准，请检查标准组配置')
+    ElMessage.warning('检测到 5 项数据，但未找到 PT 标准，请检查标准组配置')
     return
   }
 
@@ -402,7 +390,7 @@ const applyPtLockAndSelectDefault = async () => {
   for (const row of form.resultList) {
     await onStandardChange(row)
   }
-  ElMessage.success('已检测到5项，标准已默认选择PT1，CT1/CT2已禁用')
+  ElMessage.success('已检测到 5 项，默认选择 PT 标准，并禁用 CT 标准')
 }
 
 const tryAutoSelectUniqueStandard = async (ocrText) => {
@@ -420,7 +408,7 @@ const tryAutoSelectUniqueStandard = async (ocrText) => {
   }
 
   if (candidates.length !== 1) {
-    ElMessage.info('未能唯一匹配检定标准，请手动选择')
+    ElMessage.info('未能唯一匹配标准组，请手动选择')
     return
   }
 
@@ -431,7 +419,7 @@ const tryAutoSelectUniqueStandard = async (ocrText) => {
   for (const row of form.resultList) {
     await onStandardChange(row)
   }
-  ElMessage.success(`已自动匹配唯一标准：${uniqueGroup.groupKey}`)
+  ElMessage.success(`已自动匹配标准组：${uniqueGroup.groupKey}`)
 }
 
 const applyOcrToForm = async (ocrData) => {
@@ -467,14 +455,14 @@ const closeOcrPreview = () => {
 
 const handleConfirmOcrFill = async () => {
   if (!pendingOcrData.value) {
-    ElMessage.warning('暂无可回填的OCR结果')
+    ElMessage.warning('暂无可回填的 OCR 结果')
     return
   }
   try {
     await applyOcrToForm(pendingOcrData.value)
     closeOcrPreview()
     pendingOcrData.value = null
-    ElMessage.success('OCR回填完成，请核对后提交')
+    ElMessage.success('OCR 回填完成，请核对后提交')
   } catch (e) {
     console.error(e)
   }
@@ -483,19 +471,19 @@ const handleConfirmOcrFill = async () => {
 const handleCancelOcrFill = () => {
   closeOcrPreview()
   pendingOcrData.value = null
-  ElMessage.info('已取消本次OCR回填')
+  ElMessage.info('已取消本次 OCR 回填')
 }
 
 const handleOcrUpload = async (options) => {
   try {
     if (hasExistingFormDataForOcrFill()) {
-      await ElMessageBox.confirm('检测到当前表单已有数据，OCR回填将覆盖相关字段，是否继续？', '提示', {
+      await ElMessageBox.confirm('检测到当前表单已有数据，OCR 回填将覆盖相关字段，是否继续？', '提示', {
         type: 'warning',
         confirmButtonText: '继续覆盖',
         cancelButtonText: '取消',
       })
     }
-  } catch (e) {
+  } catch {
     return
   }
 
@@ -504,7 +492,7 @@ const handleOcrUpload = async (options) => {
     const ocrData = await extractOcr(options.file)
     openOcrPreview(ocrData)
     options.onSuccess?.(ocrData, options.file)
-    ElMessage.success('OCR识别完成，请确认后回填')
+    ElMessage.success('OCR 识别完成，请确认后回填')
   } catch (e) {
     options.onError?.(e)
     console.error(e)
@@ -513,7 +501,6 @@ const handleOcrUpload = async (options) => {
   }
 }
 
-// 重置表单
 const resetForm = () => {
   form.deviceId = null
   form.meterPointId = ''
@@ -532,43 +519,110 @@ const resetForm = () => {
   rowThresholds.ao = null
   rowThresholds.bo = null
   rowThresholds.co = null
+  pendingOcrData.value = null
+  ocrPreviewVisible.value = false
+  formRef.value?.clearValidate?.()
 }
 
-// 提交表单
+const fillFormFromTaskDetail = async (detail) => {
+  if (!detail) return
+
+  form.deviceId = detail.taskInfo?.deviceId ?? null
+  form.meterPointId = detail.taskInfo?.meterPointId || ''
+  form.deliverDate = detail.taskInfo?.deliverDate || ''
+  form.testDate = detail.taskInfo?.testDate || ''
+  form.temperature = detail.taskInfo?.temperature ?? null
+  form.humidity = detail.taskInfo?.humidity ?? null
+  form.tanPhi = detail.taskInfo?.tanPhi ?? null
+  form.rPercent = detail.taskInfo?.rPercent ?? null
+
+  const resultMap = new Map((detail.resultList || []).map((item) => [String(item.phase || '').toLowerCase(), item]))
+
+  for (const row of form.resultList) {
+    const item = resultMap.get(row.phase)
+    if (!item) continue
+
+    row.valF = item.valF
+    row.valDelta = item.valDelta
+    row.valDu = item.valDu
+    row.valUpt = item.valUpt
+    row.valUyb = item.valUyb
+
+    const matchedGroup = getGroupByParts(item.projectType, item.gearLevel, item.loadPercent)
+    row.standardGroupKey = matchedGroup?.groupKey || buildGroupKey(item.projectType, item.gearLevel, item.loadPercent)
+  }
+
+  for (const row of form.resultList) {
+    await onStandardChange(row)
+  }
+}
+
+const loadTaskForEdit = async () => {
+  if (!isEditMode.value) return
+  if (!editingTaskId.value) {
+    ElMessage.error('任务 ID 无效')
+    router.replace('/task/list')
+    return
+  }
+
+  loading.value = true
+  try {
+    const detail = await fetchTaskDetail(editingTaskId.value)
+    if (!detail) {
+      ElMessage.error('任务不存在或已删除')
+      router.replace('/task/list')
+      return
+    }
+    await fillFormFromTaskDetail(detail)
+  } catch (e) {
+    console.error(e)
+    router.replace('/task/list')
+  } finally {
+    loading.value = false
+  }
+}
+
+const buildPayload = () => ({
+  ...form,
+  resultList: form.resultList.map((row) => {
+    const group = getGroupByKey(row.standardGroupKey)
+    return {
+      phase: row.phase,
+      projectType: group?.projectType || '',
+      gearLevel: group?.gearLevel || '',
+      loadPercent: group?.loadPercent || '',
+      valF: row.valF,
+      valDelta: row.valDelta,
+      valDu: row.valDu,
+      valUpt: row.valUpt,
+      valUyb: row.valUyb,
+    }
+  }),
+})
+
 const handleSubmit = () => {
-  // 先校验明细数据
   for (const item of form.resultList) {
     if (!item.standardGroupKey) {
-      ElMessage.warning(`请为【${item.phase.toUpperCase()}】相选择检定标准`)
+      ElMessage.warning(`请为 ${item.phase.toUpperCase()} 相选择检定标准`)
       return
     }
   }
 
   formRef.value.validate(async (valid) => {
     if (!valid) return
+
     loading.value = true
     try {
-      // 构建提交数据，将 groupKey 拆分为 projectType, gearLevel, loadPercent
-      const payload = {
-        ...form,
-        resultList: form.resultList.map((row) => {
-          const group = getGroupByKey(row.standardGroupKey)
-          return {
-            phase: row.phase,
-            projectType: group?.projectType || '',
-            gearLevel: group?.gearLevel || '',
-            loadPercent: group?.loadPercent || '',
-            valF: row.valF,
-            valDelta: row.valDelta,
-            valDu: row.valDu,
-            valUpt: row.valUpt,
-            valUyb: row.valUyb,
-          }
-        }),
+      const payload = buildPayload()
+      if (isEditMode.value && editingTaskId.value) {
+        await updateTask(editingTaskId.value, payload)
+        ElMessage.success('任务修改成功')
+        router.push('/task/list')
+      } else {
+        await submitTask(payload)
+        ElMessage.success('任务提交成功')
+        resetForm()
       }
-      await submitTask(payload)
-      ElMessage.success('提交成功')
-      resetForm()
     } catch (e) {
       console.error(e)
     } finally {
@@ -577,21 +631,44 @@ const handleSubmit = () => {
   })
 }
 
+const initializePage = async () => {
+  resetForm()
+  await Promise.all([loadDeviceList(), loadStandardGroups()])
+  if (isEditMode.value) {
+    await loadTaskForEdit()
+  }
+}
+
+const handleBack = () => {
+  router.push('/task/list')
+}
+
 onMounted(() => {
-  loadDeviceList()
-  loadStandardGroups()
+  initializePage()
 })
+
+watch(
+  () => route.fullPath,
+  () => {
+    initializePage()
+  },
+)
 </script>
 
 <template>
   <div class="page-task-create">
-    <el-card>
-      <div class="title">新建检定任务</div>
+    <el-card v-loading="loading">
+      <div class="title-wrap">
+        <div class="title">{{ pageTitle }}</div>
+        <el-button v-if="isEditMode" @click="handleBack">返回任务列表</el-button>
+      </div>
+
       <el-alert type="info" :closable="false" show-icon class="ocr-tip">
         <template #title>
-          可先上传检测图片自动回填字段，设备选择仍需手动确认
+          可先上传检测图片自动回填字段，设备选择仍需手动确认。
         </template>
       </el-alert>
+
       <el-upload
         class="ocr-upload"
         :show-file-list="false"
@@ -601,11 +678,12 @@ onMounted(() => {
         accept=".jpg,.jpeg,.png"
         :disabled="ocrLoading || loading"
       >
-        <el-button type="primary" plain :loading="ocrLoading">图片OCR一键回填</el-button>
+        <el-button type="primary" plain :loading="ocrLoading">OCR 图片识别并回填</el-button>
       </el-upload>
+
       <el-dialog
         v-model="ocrPreviewVisible"
-        title="OCR识别结果确认"
+        title="OCR 识别结果预览"
         width="900px"
         top="8vh"
         append-to-body
@@ -613,11 +691,11 @@ onMounted(() => {
         @closed="pendingOcrData = null"
       >
         <el-alert type="warning" :closable="false" show-icon class="ocr-preview-alert">
-          <template #title>请先确认识别结果，点击“确认回填”后才会写入表单</template>
+          <template #title>请先核对 OCR 识别结果，确认无误后再回填到表单。</template>
         </el-alert>
         <el-row :gutter="12">
           <el-col :span="12">
-            <div class="preview-title">OCR原文</div>
+            <div class="preview-title">OCR 原始文本</div>
             <el-input
               type="textarea"
               :rows="16"
@@ -627,7 +705,7 @@ onMounted(() => {
             />
           </el-col>
           <el-col :span="12">
-            <div class="preview-title">抽取结果（JSON）</div>
+            <div class="preview-title">提取后的键值对（JSON）</div>
             <el-input
               type="textarea"
               :rows="16"
@@ -642,8 +720,8 @@ onMounted(() => {
           <el-button type="primary" @click="handleConfirmOcrFill">确认回填</el-button>
         </template>
       </el-dialog>
+
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
-        <!-- 设备选择下拉 -->
         <el-form-item label="被检设备" prop="deviceId">
           <el-select
             v-model="form.deviceId"
@@ -661,57 +739,63 @@ onMounted(() => {
           </el-select>
         </el-form-item>
 
-        <!-- 选中设备信息展示 -->
         <el-form-item v-if="selectedDevice" label="设备信息">
           <el-descriptions :column="2" border size="small">
-            <el-descriptions-item label="产品编号">{{ selectedDevice.productNo }}</el-descriptions-item>
-            <el-descriptions-item label="产品名称">{{ selectedDevice.productName }}</el-descriptions-item>
+            <el-descriptions-item label="设备编号">{{ selectedDevice.productNo }}</el-descriptions-item>
+            <el-descriptions-item label="设备名称">{{ selectedDevice.productName }}</el-descriptions-item>
             <el-descriptions-item label="型号">{{ selectedDevice.model || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="制造商">{{ selectedDevice.manufacturer || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="生产厂家">{{ selectedDevice.manufacturer || '-' }}</el-descriptions-item>
           </el-descriptions>
         </el-form-item>
 
         <el-form-item label="计量点编号" prop="meterPointId">
           <el-input v-model="form.meterPointId" placeholder="请输入计量点编号" />
         </el-form-item>
+
         <el-form-item label="送检日期" prop="deliverDate">
           <el-date-picker
             v-model="form.deliverDate"
             type="date"
             value-format="YYYY-MM-DD"
-            placeholder="选择日期"
+            placeholder="请选择送检日期"
             style="width: 100%"
           />
         </el-form-item>
+
         <el-form-item label="测试日期" prop="testDate">
           <el-date-picker
             v-model="form.testDate"
             type="datetime"
             value-format="YYYY-MM-DD HH:mm:ss"
-            placeholder="选择日期时间"
+            placeholder="请选择测试日期时间"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="环境温度(℃)" prop="temperature">
-          <el-input-number v-model="form.temperature" :precision="1" :controls="false" style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="环境湿度(%)" prop="humidity">
-          <el-input-number v-model="form.humidity" :precision="1" :controls="false" style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="tanφ" prop="tanPhi">
-          <el-input-number v-model="form.tanPhi" :precision="4" :controls="false" style="width: 200px" />
-        </el-form-item>
-        <el-form-item label="r%" prop="rPercent">
-          <el-input-number v-model="form.rPercent" :precision="3" :controls="false" style="width: 200px" />
+
+        <el-form-item label="温度(℃)" prop="temperature">
+          <el-input-number v-model="form.temperature" :precision="1" :controls="false" style="width: 220px" />
         </el-form-item>
 
-        <el-divider>明细数据（ao / bo / co）</el-divider>
+        <el-form-item label="湿度(%)" prop="humidity">
+          <el-input-number v-model="form.humidity" :precision="1" :controls="false" style="width: 220px" />
+        </el-form-item>
 
-        <!-- 配色提示说明 -->
+        <el-form-item label="tanPhi" prop="tanPhi">
+          <el-input-number v-model="form.tanPhi" :precision="4" :controls="false" style="width: 220px" />
+        </el-form-item>
+
+        <el-form-item label="rPercent" prop="rPercent">
+          <el-input-number v-model="form.rPercent" :precision="3" :controls="false" style="width: 220px" />
+        </el-form-item>
+
+        <el-divider>三相测量明细（ao / bo / co）</el-divider>
+
         <div class="color-legend">
-          <span class="legend-item"><span class="dot pass"></span> 合格（数值在阈值范围内）</span>
-          <span class="legend-item"><span class="dot fail"></span> 不合格（数值超出阈值范围）</span>
-          <span class="legend-item"><el-tag size="small" type="info">提示：PT项目需校验5项，CT项目仅校验f和δ</el-tag></span>
+          <span class="legend-item"><span class="dot pass"></span>绿色数值表示该项落在阈值范围内</span>
+          <span class="legend-item"><span class="dot fail"></span>红色数值表示该项超出阈值范围</span>
+          <span class="legend-item">
+            <el-tag size="small" type="info">PT 项目有 5 项，CT 项目仅校验 f/delta</el-tag>
+          </span>
         </div>
 
         <el-table :data="form.resultList" border stripe :row-class-name="getRowClassName" style="width: 100%">
@@ -720,12 +804,13 @@ onMounted(() => {
               <span style="text-transform: uppercase; font-weight: bold">{{ row.phase }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="standardGroupKey" label="检定标准" min-width="220">
+
+          <el-table-column prop="standardGroupKey" label="检定标准组" min-width="220">
             <template #default="{ row }">
               <el-select
                 class="standard-select"
                 v-model="row.standardGroupKey"
-                placeholder="选择标准"
+                placeholder="请选择检定标准组"
                 filterable
                 :loading="standardLoading"
                 size="small"
@@ -745,10 +830,8 @@ onMounted(() => {
               </el-select>
             </template>
           </el-table-column>
+
           <el-table-column label="f(%)" min-width="170">
-            <template #header>
-              <span>f(%)</span>
-            </template>
             <template #default="{ row }">
               <el-input-number
                 class="measure-input"
@@ -761,7 +844,8 @@ onMounted(() => {
               <div class="threshold-hint">{{ formatThresholdRange(row, 'f') }}</div>
             </template>
           </el-table-column>
-          <el-table-column label="δ(分)" min-width="170">
+
+          <el-table-column label="delta" min-width="170">
             <template #default="{ row }">
               <el-input-number
                 class="measure-input"
@@ -774,6 +858,7 @@ onMounted(() => {
               <div class="threshold-hint">{{ formatThresholdRange(row, 'delta') }}</div>
             </template>
           </el-table-column>
+
           <el-table-column label="dU(%)" min-width="170">
             <template #default="{ row }">
               <el-input-number
@@ -785,9 +870,12 @@ onMounted(() => {
                 :disabled="!isPTProject(row)"
                 :style="getCellStyle(row, 'valDu')"
               />
-              <div class="threshold-hint">{{ isPTProject(row) ? formatThresholdRange(row, 'du') : '(CT无)' }}</div>
+              <div class="threshold-hint">
+                {{ isPTProject(row) ? formatThresholdRange(row, 'du') : '仅 PT 项目需要填写' }}
+              </div>
             </template>
           </el-table-column>
+
           <el-table-column label="Upt" min-width="170">
             <template #default="{ row }">
               <el-input-number
@@ -799,9 +887,12 @@ onMounted(() => {
                 :disabled="!isPTProject(row)"
                 :style="getCellStyle(row, 'valUpt')"
               />
-              <div class="threshold-hint">{{ isPTProject(row) ? formatThresholdRange(row, 'upt') : '(CT无)' }}</div>
+              <div class="threshold-hint">
+                {{ isPTProject(row) ? formatThresholdRange(row, 'upt') : '仅 PT 项目需要填写' }}
+              </div>
             </template>
           </el-table-column>
+
           <el-table-column label="Uyb" min-width="170">
             <template #default="{ row }">
               <el-input-number
@@ -813,10 +904,13 @@ onMounted(() => {
                 :disabled="!isPTProject(row)"
                 :style="getCellStyle(row, 'valUyb')"
               />
-              <div class="threshold-hint">{{ isPTProject(row) ? formatThresholdRange(row, 'uyb') : '(CT无)' }}</div>
+              <div class="threshold-hint">
+                {{ isPTProject(row) ? formatThresholdRange(row, 'uyb') : '仅 PT 项目需要填写' }}
+              </div>
             </template>
           </el-table-column>
-          <el-table-column label="实时校验" min-width="120">
+
+          <el-table-column label="本相结论" min-width="120">
             <template #default="{ row }">
               <el-tag v-if="checkRowPass(row) === true" type="success" size="small">合格</el-tag>
               <el-tag v-else-if="checkRowPass(row) === false" type="danger" size="small">不合格</el-tag>
@@ -826,7 +920,7 @@ onMounted(() => {
         </el-table>
 
         <el-form-item style="margin-top: 20px">
-          <el-button type="primary" :loading="loading" @click="handleSubmit">提交任务</el-button>
+          <el-button type="primary" :loading="loading" @click="handleSubmit">{{ submitButtonText }}</el-button>
           <el-button @click="resetForm">重置</el-button>
         </el-form-item>
       </el-form>
@@ -841,10 +935,16 @@ onMounted(() => {
   gap: 16px;
 }
 
+.title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
 .title {
   font-size: 18px;
   font-weight: 600;
-  margin-bottom: 20px;
   color: #303133;
 }
 
@@ -884,54 +984,39 @@ onMounted(() => {
 }
 
 .dot {
-  width: 12px;
-  height: 12px;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
 .dot.pass {
-  background-color: #67C23A;
+  background: #67c23a;
 }
 
 .dot.fail {
-  background-color: #F56C6C;
-}
-
-.threshold-hint {
-  font-size: 11px;
-  color: #909399;
-  margin-top: 2px;
-  text-align: center;
-}
-
-:deep(.row-pass) {
-  background-color: #f0f9eb !important;
-}
-
-:deep(.row-fail) {
-  background-color: #fef0f0 !important;
-}
-
-:deep(.el-input-number) {
-  width: 100%;
-}
-
-:deep(.el-input-number .el-input__inner) {
-  text-align: left;
-}
-
-:deep(.el-input-number.is-disabled .el-input__inner) {
-  background-color: #f5f7fa;
+  background: #f56c6c;
 }
 
 .standard-select {
   width: 100%;
 }
 
-:deep(.standard-select .el-select__wrapper),
-:deep(.measure-input .el-input__wrapper) {
-  min-height: 30px;
+.measure-input {
+  width: 100%;
+}
+
+.threshold-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #909399;
+}
+
+:deep(.row-pass td) {
+  background: rgba(103, 194, 58, 0.07) !important;
+}
+
+:deep(.row-fail td) {
+  background: rgba(245, 108, 108, 0.07) !important;
 }
 </style>
-
-

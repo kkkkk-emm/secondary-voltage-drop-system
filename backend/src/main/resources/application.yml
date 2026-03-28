@@ -52,7 +52,7 @@ ocr:
   max-image-size: 5242880 # 5MB
   rate-limit:
     enabled: ${OCR_RATE_LIMIT_ENABLED:true}
-    max-requests: ${OCR_RATE_LIMIT_MAX_REQUESTS:15}
+    max-requests: ${OCR_RATE_LIMIT_MAX_REQUESTS:4}
     window-seconds: ${OCR_RATE_LIMIT_WINDOW_SECONDS:60}
     key-prefix: ${OCR_RATE_LIMIT_KEY_PREFIX:svd:rate:ocr}
 
@@ -69,3 +69,12 @@ llm:
   api-key: ${LLM_API_KEY:}
   model: ${LLM_MODEL:deepseek-chat}
   timeout-seconds: 30
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
