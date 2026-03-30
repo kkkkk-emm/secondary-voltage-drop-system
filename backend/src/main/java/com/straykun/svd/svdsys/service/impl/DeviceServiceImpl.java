@@ -8,6 +8,7 @@ import com.straykun.svd.svdsys.controller.vo.DeviceVO;
 import com.straykun.svd.svdsys.domain.BizDevice;
 import com.straykun.svd.svdsys.mapper.BizDeviceMapper;
 import com.straykun.svd.svdsys.service.DeviceService;
+import com.straykun.svd.svdsys.service.support.EntityValidationSupport;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class DeviceServiceImpl implements DeviceService {
 
     private final BizDeviceMapper bizDeviceMapper;
+    private final EntityValidationSupport entityValidationSupport;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -32,8 +34,10 @@ public class DeviceServiceImpl implements DeviceService {
      *
      * @param bizDeviceMapper 参数 bizDeviceMapper。
      */
-    public DeviceServiceImpl(BizDeviceMapper bizDeviceMapper) {
+    public DeviceServiceImpl(BizDeviceMapper bizDeviceMapper,
+                             EntityValidationSupport entityValidationSupport) {
         this.bizDeviceMapper = bizDeviceMapper;
+        this.entityValidationSupport = entityValidationSupport;
     }
 
     /**
@@ -76,6 +80,7 @@ public class DeviceServiceImpl implements DeviceService {
         if (StringUtils.hasText(request.getProductionDate())) {
             device.setProductionDate(LocalDate.parse(request.getProductionDate(), DATE_FORMATTER));
         }
+        entityValidationSupport.validate(device);
         bizDeviceMapper.insert(device);
     }
 
@@ -107,6 +112,7 @@ public class DeviceServiceImpl implements DeviceService {
         } else {
             device.setProductionDate(null);
         }
+        entityValidationSupport.validate(device);
         bizDeviceMapper.update(device);
     }
 

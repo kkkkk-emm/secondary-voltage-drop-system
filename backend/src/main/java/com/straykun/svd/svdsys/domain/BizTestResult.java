@@ -1,5 +1,7 @@
 package com.straykun.svd.svdsys.domain;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -10,53 +12,27 @@ import java.math.BigDecimal;
 @Data
 public class BizTestResult {
 
-    /**
-     * 主键 ID。
-     */
     private Long id;
 
-    /**
-     * taskId 字段。
-     */
+    @NotNull(message = "任务ID不能为空")
     private Long taskId;
 
-    /**
-     * standardId 字段。
-     */
+    @NotNull(message = "标准ID不能为空")
     private Long standardId;
 
-    /**
-     * 相别。
-     */
+    @NotBlank(message = "相别不能为空")
     private String phase;
 
-    /**
-     * f(%) 测量值。
-     */
     private BigDecimal valF;
 
-    /**
-     * δ(分) 测量值。
-     */
     private BigDecimal valDelta;
 
-    /**
-     * dU(%) 测量值。
-     */
     private BigDecimal valDu;
 
-    /**
-     * Upt 测量值。
-     */
     private BigDecimal valUpt;
 
-    /**
-     * Uyb 测量值。
-     */
     private BigDecimal valUyb;
 
-    /**
-     * 是否合格标记。
-     */
+    @NotNull(message = "合格标记不能为空")
     private Integer isPass;
 }

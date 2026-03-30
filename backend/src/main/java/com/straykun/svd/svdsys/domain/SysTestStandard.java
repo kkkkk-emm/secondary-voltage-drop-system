@@ -1,5 +1,6 @@
 package com.straykun.svd.svdsys.domain;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -10,38 +11,20 @@ import java.math.BigDecimal;
 @Data
 public class SysTestStandard {
 
-    /**
-     * 主键 ID。
-     */
+    @NotNull(message = "标准ID不能为空")
     private Long id;
 
-    /**
-     * projectType 字段。
-     */
     private String projectType;
 
-    /**
-     * gearLevel 字段。
-     */
     private String gearLevel;
 
-    /**
-     * loadPercent 字段。
-     */
     private String loadPercent;
 
-    /**
-     * limitMin 字段。
-     */
+    @NotNull(message = "下限不能为空")
     private BigDecimal limitMin;
 
-    /**
-     * limitMax 字段。
-     */
+    @NotNull(message = "上限不能为空")
     private BigDecimal limitMax;
 
-    /**
-     * thresholdItem 字段。
-     */
     private String thresholdItem;
 }

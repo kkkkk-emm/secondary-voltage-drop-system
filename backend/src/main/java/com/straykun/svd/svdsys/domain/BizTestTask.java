@@ -1,5 +1,7 @@
 package com.straykun.svd.svdsys.domain;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -7,58 +9,37 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * 业务检定检定任务实体对象。
+ * 业务检定任务实体对象。
  */
 @Data
 public class BizTestTask {
 
-    /**
-     * 主键 ID。
-     */
     private Long id;
 
-    /**
-     * 设备 ID。
-     */
+    @NotNull(message = "设备ID不能为空")
     private Long deviceId;
 
-    /**
-     * 操作员 ID。
-     */
+    @NotNull(message = "操作员ID不能为空")
     private Long operatorId;
 
-    /**
-     * 计量点编号。
-     */
+    @NotBlank(message = "计量点编号不能为空")
     private String meterPointId;
 
-    /**
-     * 送检日期，格式为 yyyy-MM-dd。
-     */
+    @NotNull(message = "送检日期不能为空")
     private LocalDate deliverDate;
 
-    /**
-     * 测试日期，格式为 yyyy-MM-dd HH:mm:ss。
-     */
+    @NotNull(message = "测试日期不能为空")
     private LocalDateTime testDate;
 
-    /**
-     * 环境温度。
-     */
+    @NotNull(message = "环境温度不能为空")
     private BigDecimal temperature;
 
-    /**
-     * 环境湿度。
-     */
+    @NotNull(message = "环境湿度不能为空")
     private BigDecimal humidity;
 
-    /**
-     * tanφ 值。
-     */
+    @NotNull(message = "tanφ不能为空")
     private BigDecimal tanPhi;
 
-    /**
-     * r% 值。
-     */
+    @NotNull(message = "r%不能为空")
     private BigDecimal rPercent;
 }

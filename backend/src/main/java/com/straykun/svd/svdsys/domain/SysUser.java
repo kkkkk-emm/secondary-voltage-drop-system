@@ -1,5 +1,7 @@
 package com.straykun.svd.svdsys.domain;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -8,33 +10,20 @@ import lombok.Data;
 @Data
 public class SysUser {
 
-    /**
-     * 主键 ID。
-     */
     private Long id;
 
-    /**
-     * 用户名。
-     */
+    @NotBlank(message = "用户名不能为空")
     private String username;
 
-    /**
-     * 密码。
-     */
+    @NotBlank(message = "密码不能为空")
     private String password;
 
-    /**
-     * 真实姓名。
-     */
+    @NotBlank(message = "真实姓名不能为空")
     private String realName;
 
-    /**
-     * 角色编码。
-     */
+    @NotNull(message = "角色不能为空")
     private Integer role;
 
-    /**
-     * 状态编码。
-     */
+    @NotNull(message = "状态不能为空")
     private Integer status;
 }

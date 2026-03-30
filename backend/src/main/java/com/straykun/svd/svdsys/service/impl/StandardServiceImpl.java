@@ -6,6 +6,7 @@ import com.straykun.svd.svdsys.controller.vo.StandardVO;
 import com.straykun.svd.svdsys.domain.SysTestStandard;
 import com.straykun.svd.svdsys.mapper.SysTestStandardMapper;
 import com.straykun.svd.svdsys.service.StandardService;
+import com.straykun.svd.svdsys.service.support.EntityValidationSupport;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +20,17 @@ import java.util.stream.Collectors;
 public class StandardServiceImpl implements StandardService {
 
     private final SysTestStandardMapper standardMapper;
+    private final EntityValidationSupport entityValidationSupport;
 
     /**
      * 构造函数，初始化 StandardServiceImpl 所需依赖。
      *
      * @param standardMapper 参数 standardMapper。
      */
-    public StandardServiceImpl(SysTestStandardMapper standardMapper) {
+    public StandardServiceImpl(SysTestStandardMapper standardMapper,
+                               EntityValidationSupport entityValidationSupport) {
         this.standardMapper = standardMapper;
+        this.entityValidationSupport = entityValidationSupport;
     }
 
     /**
@@ -161,6 +165,7 @@ public class StandardServiceImpl implements StandardService {
         std.setId(request.getId());
         std.setLimitMin(request.getLimitMin());
         std.setLimitMax(request.getLimitMax());
+        entityValidationSupport.validate(std);
         standardMapper.updateById(std);
     }
 

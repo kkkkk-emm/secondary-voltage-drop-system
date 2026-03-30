@@ -19,6 +19,7 @@ import com.straykun.svd.svdsys.mapper.SysTestStandardMapper;
 import com.straykun.svd.svdsys.mapper.SysUserMapper;
 import com.straykun.svd.svdsys.security.SecurityUtils;
 import com.straykun.svd.svdsys.service.TaskService;
+import com.straykun.svd.svdsys.service.support.EntityValidationSupport;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,17 +47,20 @@ public class TaskServiceImpl implements TaskService {
     private final BizTestResultMapper resultMapper;
     private final SysTestStandardMapper standardMapper;
     private final SysUserMapper userMapper;
+    private final EntityValidationSupport entityValidationSupport;
 
     public TaskServiceImpl(BizDeviceMapper deviceMapper,
                            BizTestTaskMapper taskMapper,
                            BizTestResultMapper resultMapper,
                            SysTestStandardMapper standardMapper,
-                           SysUserMapper userMapper) {
+                           SysUserMapper userMapper,
+                           EntityValidationSupport entityValidationSupport) {
         this.deviceMapper = deviceMapper;
         this.taskMapper = taskMapper;
         this.resultMapper = resultMapper;
         this.standardMapper = standardMapper;
         this.userMapper = userMapper;
+        this.entityValidationSupport = entityValidationSupport;
     }
 
     @Override
@@ -68,6 +72,7 @@ public class TaskServiceImpl implements TaskService {
         BizTestTask task = new BizTestTask();
         fillTaskFromDto(task, dto);
         task.setOperatorId(operatorId);
+        entityValidationSupport.validate(task);
 
         taskMapper.insert(task);
         replaceTaskResults(task.getId(), dto.getResultList());
@@ -84,6 +89,7 @@ public class TaskServiceImpl implements TaskService {
         validateDeviceExists(dto.getDeviceId());
 
         fillTaskFromDto(task, dto);
+        entityValidationSupport.validate(task);
         taskMapper.updateById(task);
 
         replaceTaskResults(taskId, dto.getResultList());
@@ -333,6 +339,7 @@ public class TaskServiceImpl implements TaskService {
             result.setValUpt(item.getValUpt());
             result.setValUyb(item.getValUyb());
             result.setIsPass(checkPassAllItems(thresholdItems, item) ? 1 : 0);
+            entityValidationSupport.validate(result);
             resultEntities.add(result);
         }
 
